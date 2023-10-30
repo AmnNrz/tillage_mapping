@@ -18,12 +18,12 @@
 import pandas as pd
 
 # # Read data
-path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-                "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
+# path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+#                 "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+#                 "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
 
-# path_to_data = ("/home/amnnrz/OneDrive - "
-#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data/")
+path_to_data = ("/home/amnnrz/OneDrive - "
+                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data/")
 
 df = pd.read_csv(path_to_data + "metric_finalDATA.csv", index_col=0)
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
