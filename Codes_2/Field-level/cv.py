@@ -14,77 +14,58 @@
 # ---
 
 # +
+#%%
 import pandas as pd
 
 # # Read data
 path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
-                "Tillage_Mapping/Data/")
+                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+                "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
 
 # path_to_data = ("/home/amnnrz/OneDrive - "
 #                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data/")
 
-df_2122 = pd.read_csv(
-    path_to_data + 'field_level_data/field_level_main_glcm_seasonBased_joined_2122.csv',
-    index_col=0)
-df_2223 = pd.read_csv(
-    path_to_data + 'field_level_data/field_level_main_glcm_seasonBased_joined_2223.csv',
-    index_col=0)
-cdl_2122 = pd.read_csv(path_to_data + 'cdl_data/cdl_2122.csv')
+df = pd.read_csv(path_to_data + "metric_finalDATA.csv", index_col=0)
+df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
+
+# Split df into two dataframes. It is important that each category
+# in columns "Tillage", "ResidueType", "ResidueCov" has roughly equal counts
+# in both dataframes.
+
+# We split it based on Tillage and see if it works for the two features also:
+def split_dataframe(df, column):
+    unique_values = df[column].unique()
+    dfs1 = []
+    dfs2 = []
+
+    for value in unique_values:
+        temp_df = df[df[column] == value].sample(frac=1) \
+        .reset_index(drop=True) # Shuffle
+        midpoint = len(temp_df) // 2
+        dfs1.append(temp_df.iloc[:midpoint])
+        dfs2.append(temp_df.iloc[midpoint:])
+
+    df1 = pd.concat(dfs1, axis=0).sample(frac=1) \
+        .reset_index(drop=True) # Shuffle after concatenating
+    df2 = pd.concat(dfs2, axis=0).sample(frac=1) \
+        .reset_index(drop=True)
+
+    return df1, df2
+
+df1, df2 = split_dataframe(df, 'Tillage')
 
 
-# Rename df_2223 PriorCropT labels
-replacement_dict = {
-    'Grain':'grain', 
-    'Canola':'canola', 
-    'Legume':'legume'
-}
-
-df_2223['PriorCropT'] = df_2223['PriorCropT'].replace(
-    replacement_dict
-)
-
-df_2223 = df_2223.loc[
-    df_2223['PriorCropT'].isin(['grain', 'canola', 'legume'])
-]
-
-df = pd.concat([df_2122, df_2223])
-cdl = cdl_2122[['pointID', 'most_frequent_class']].copy()
-cdl.rename(columns={'most_frequent_class': 'PriorCropT'}, inplace=True)
+# Lets check number of each category in the "Tillage", "ResidueType",
+# "ResidueCov" for both dataframes
+print(df1["Tillage"].value_counts(), df2["Tillage"].value_counts())
+print("\n")
+print(df1["ResidueType"].value_counts(), df2["ResidueType"].value_counts())
+print("\n")
+print(df1["ResidueCov"].value_counts(), df2["ResidueCov"].value_counts())
 
 
-# Rename cdl labels
-replacement_dict = {24: 'grain', 23: 'grain', 51: 'legume',
-                    51: 'legume', 31: 'canola', 53: 'legume',
-                    21: 'grain', 51: 'legume', 52: 'legume',
-                    28: 'grain'}
 
-cdl['PriorCropT'] = cdl['PriorCropT'].replace(
-    replacement_dict)
-
-cdl = cdl.loc[cdl['PriorCropT'].isin(
-                    ['grain', 'legume', 'canola'])]
-
-df_2122.drop(columns='PriorCropT', inplace=True)
-df_2122 = pd.merge(df_2122, cdl, on='pointID')
-
-# Define the new order of columns
-cols = list(df_2122.columns)
-cols
-cols.remove('PriorCropT')
-cols.insert(3, 'PriorCropT')
-
-# Reindex the DataFrame with the new column order
-df_2122 = df_2122[cols]
-
-df_2122['PriorCropT'].isna().value_counts()
-
-df1 = pd.concat([df_2122, df_2223])
-
-
-df1
-
-# +
+#%%
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
@@ -111,7 +92,7 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         target_weights = np.array([target_weights_dict[sample] for sample in y])
 
         # Rest of the weight calculation can stay same
-        feature_cols = ['PriorCropT']
+        feature_cols = ['ResidueType']
         feature_weights = np.zeros(X.shape[0])
         for col in feature_cols:
             feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
@@ -134,33 +115,7 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         return self.rf.feature_importances_
 
 
-# -
-
-X
-
-X
-
-X
-
-
-# +
-# Find columns that start with "ResidueCov_"
-dummies_cols = [
-    col for col in df_encoded.columns if col.startswith('ResidueCov_')]
-
-# Inverse the one-hot encoding
-df_encoded['ResidueCov'] = df_encoded[dummies_cols].idxmax(axis=1)
-
-# Remove "ResidueCov_" prefix
-df_encoded['ResidueCov'] = df_encoded['ResidueCov'].str.replace(
-    'ResidueCov_', '')
-
-# Drop the dummy columns
-df_encoded = df_encoded.drop(columns=dummies_cols)
-
-# -
-
-df_encoded
+#%%
 
 # +
 import numpy as np
@@ -184,13 +139,13 @@ df = df1
 # df_encoded = pd.get_dummies(df, columns=['ResidueCov'])
 df_encoded = df
 
-# Encode "PriorCropT"
+# Encode "ResidueType"
 encode_dict = {
     'grain': 1,
     'legume': 2,
     'canola': 3
 }
-df_encoded['PriorCropT'] = df_encoded['PriorCropT'].replace(encode_dict)
+df_encoded['ResidueType'] = df_encoded['ResidueType'].replace(encode_dict)
 df_encoded
 
 # # Place the one-hot encoded columns on the left side of the dataframe
@@ -201,18 +156,15 @@ df_encoded
 df_ordered = df_encoded
 
 # Remove NA from Tillage
-df_ordered = df_ordered.dropna(subset=["Tillage", "ResidueCov"])
+df_ordered = df_ordered.dropna(subset=["Tillage", "ResidueCov", "ResidueType"])
 
 le = LabelEncoder()
 df_ordered['ResidueCov'] = le.fit_transform(df_ordered['ResidueCov'])
 
 # Split features and target variable
 X = df_ordered.iloc[:, np.concatenate(
-    [np.arange(0, 3), np.arange(6,7), np.arange(9, df_ordered.shape[1])]
+    [np.arange(3, 4), np.arange(8, df_ordered.shape[1])]
     )]
-
-# Remove ResidueCov
-X = X.iloc[:, 3:]
     
 y = df_ordered['ResidueCov']
 
@@ -225,11 +177,11 @@ X = X.fillna(X.median())
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
 param_grid = {
-    'n_estimators': [20, 30, 40, 50, 100, 300],
+    'n_estimators': [40, 50, 100, 300, 800],
     # 'n_estimators': [30],
-    'max_depth': [5, 10 , 20 , 40],
+    'max_depth': [5, 40, None],
     # 'a': list(np.arange(-10, 10, 0.5))
-    'a': [0]
+    'a': [0, 0.1, 0.2, 0.3, 0.5, 1]
 }
 
 # Perform cross-validation for 20 times and calculate accuracies
@@ -368,8 +320,6 @@ plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
 plt.legend()
 plt.show()
 
-# -
-
 plt.figure(figsize=(10, 6))
 for a_value, accuracies in a_vs_accuracy.items():
     plt.scatter([a_value] * len(accuracies), accuracies, label=f'a={a_value}')
@@ -379,7 +329,10 @@ plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
 # Moved the legend to the right
 plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.show()
+# -
 
+
+#%%
 
 # +
 import matplotlib.pyplot as plt
