@@ -18,12 +18,12 @@
 import pandas as pd
 
 # # Read data
-# path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-#                 "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-#                 "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
+path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+                "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
 
-path_to_data = ("/home/amnnrz/OneDrive - "
-                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data/")
+# path_to_data = ("/home/amnnrz/OneDrive - "
+#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data/")
 
 df = pd.read_csv(path_to_data + "metric_finalDATA.csv", index_col=0)
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
@@ -113,8 +113,39 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
     @property
     def feature_importances_(self):
         return self.rf.feature_importances_
+    
 
+    from sklearn.svm import SVC
+    class CustomWeightedSVM(BaseEstimator, ClassifierMixin):
+        def __init__(self, C=1.0, kernel='rbf', gamma='scale', **kwargs):
+            self.C = C
+            self.kernel = kernel
+            self.gamma = gamma
+            self.svm = SVC(C=self.C, kernel=self.kernel, gamma=self.gamma,
+                            probability=True, **kwargs)
+        
+        def fit(self, X, y, **kwargs):
+            target_weights_dict = calculate_custom_weights(y, self.a)
+            target_weights = np.array([target_weights_dict[sample] for sample in y])
+            
+            # Rest of the weight calculation can stay same
+            feature_cols = ['ResidueType']
+            feature_weights = np.zeros(X.shape[0])
+            for col in feature_cols:
+                feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
+                feature_weights += X[col].map(feature_weights_dict).values
 
+            sample_weights = target_weights * feature_weights
+            
+            # Now fit the SVC with the computed weights
+            self.svm.fit(X, y, sample_weight=sample_weights)
+            return self
+        
+        def predict(self, X, **kwargs):
+            return self.svm.predict(X)
+        
+        def predict_proba(self, X, **kwargs):
+            return self.svm.predict_proba(X)
 #%%
 
 # +
@@ -177,14 +208,14 @@ X = X.fillna(X.median())
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
 param_grid = {
-    'n_estimators': [40, 50, 100, 300, 800],
+    'n_estimators': [40, 50, 100, 300],
     # 'n_estimators': [30],
-    'max_depth': [5, 40, None],
+    'max_depth': [5, 40, 55],
     # 'a': list(np.arange(-10, 10, 0.5))
-    'a': [0, 0.1, 0.2, 0.3, 0.5, 1]
+    'a': [0, 0.2, 0.5, 1]
 }
 
-# Perform cross-validation for 20 times and calculate accuracies
+# Perform cross-validation for 50 times and calculate accuracies
 mean_accuracies = []
 best_model = None
 best_val_accuracy = 0
@@ -196,13 +227,13 @@ mean_test_scores = []
 # initialize a list to store mean validation accuracies for each value of "a"
 a_vs_accuracy = {a_value: [] for a_value in param_grid['a']}
 
-for _ in range(10):
+for _ in range(5):
 
-    if _ == 3:  # After the first three loops
-        top_20_features = [feature[0]
-            for feature in feature_counter.most_common(20)]
-        selected_features = top_20_features
-        # Adjust training and test sets to include only these 20 features
+    if _ == 5:  # After the first three loops
+        top_50_features = [feature[0]
+            for feature in feature_counter.most_common(50)]
+        selected_features = top_50_features
+        # Adjust training and test sets to include only these 50 features
         X_train = X_train[selected_features]
         X_test = X_test[selected_features]
 
@@ -236,10 +267,10 @@ for _ in range(10):
         best_model = current_model
         best_val_accuracy = val_accuracy
 
-    # Update the feature counter with the top 20 important features of the current model
-    top_20_indices = current_model.feature_importances_.argsort()[::-1][:50]
-    top_20_features = X.columns[top_20_indices]
-    feature_counter.update(top_20_features)
+    # Update the feature counter with the top 50 important features of the current model
+    top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
+    top_50_features = X.columns[top_50_indices]
+    feature_counter.update(top_50_indices)
 
 # Calculate mean accuracy across the 20 runs
 mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
@@ -285,21 +316,21 @@ plt.tight_layout()
 plt.show()
 
 
-# Print the features that appeared most frequently in the top 20 important features
+# Print the features that appeared most frequently in the top 50 important features
 most_common_features = feature_counter.most_common()
-print("Features that appeared most frequently in the top 20 important features:")
+print("Features that appeared most frequently in the top 50 important features:")
 for feature, count in most_common_features:
     print(f"{feature}: {count} times")
 
-# Plot the 20 most important features over all runs
-top_20_features = [feature[0] for feature in most_common_features[:20]]
-top_20_importances = [feature[1] for feature in most_common_features[:20]]
+# Plot the 50 most important features over all runs
+top_50_features = [feature[0] for feature in most_common_features[:50]]
+top_50_importances = [feature[1] for feature in most_common_features[:50]]
 
 plt.figure(figsize=(10, 8))
-plt.barh(top_20_features, top_20_importances)
+plt.barh(top_50_features, top_50_importances)
 plt.xlabel('Importance')
 plt.ylabel('Features')
-plt.title('Top 20 Most Important Features')
+plt.title('Top 50 Most Important Features')
 plt.show()
 
 # After printing important features, plot the boxplot for validation accuracies
@@ -329,10 +360,7 @@ plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
 # Moved the legend to the right
 plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.show()
-# -
 
-
-#%%
 
 # +
 import matplotlib.pyplot as plt
@@ -403,27 +431,6 @@ plt.grid(axis='y', linestyle='--', linewidth=0.7, alpha=0.7)
 plt.tight_layout()
 plt.show()
 
-# -
-
-grid_search.cv_results_['mean_test_score']
-
-
-# +
-# scores_matrix = grid_search.cv_results_['mean_test_score'][4].reshape(
-#     len(param_grid['max_depth']),
-#     len(param_grid['n_estimators'])
-# )
-# plt.figure(figsize=(12, 6))
-# annot_kws = {"size": 10}
-
-# sns.heatmap(scores_matrix, annot=False,
-#             xticklabels=param_grid['n_estimators'],
-#             yticklabels=param_grid['max_depth'], cmap="YlGnBu")
-# plt.xlabel('Number of Estimators (n_estimators)')
-# plt.ylabel('Maximum Depth (max_depth)')
-# plt.title('Mean Test Scores for Hyperparameter Combinations')
-# plt.show()
-
 
 # +
 import numpy as np
@@ -473,4 +480,28 @@ axes[-1].legend(handles=legend_handles, loc="lower right", title="max_depth")
 
 plt.tight_layout()
 plt.show()
+
+# -
+
+selected_features
+
+# +
+# selected_features = ['ResidueType'] + \
+#     list(X_train.iloc[:, np.array(top_50_features)].columns)
+
+selected_features
+
+X_train = X_train[selected_features]
+X_train.shape, y_train.shape
+
+# Adjust the param_grid to be suitable for SVC
+param_grid = {
+    'C': [0.1, 1, 10, 100],
+    'kernel': ['rbf', 'linear', 'poly', 'sigmoid'],
+    'gamma': ['scale', 'auto'],
+    'a': [0, 0.2, 0.5, 1]
+}
+
+grid_search = GridSearchCV(CustomWeightedSVM(), param_grid, cv=5, return_train_score=False)
+
 
