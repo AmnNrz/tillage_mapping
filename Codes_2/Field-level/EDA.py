@@ -5,7 +5,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: tillmap
 #     language: python
@@ -18,14 +18,14 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 
-# # # Read data
-# path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-#                 "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-#                 "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
+# # Read data
+path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+                "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
 
-path_to_data = ("/home/amnnrz/OneDrive - "
-                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
-                "/field_level_data/FINAL_DATA/")
+# path_to_data = ("/home/amnnrz/OneDrive - "
+#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
+#                 "/field_level_data/FINAL_DATA/")
 
 df = pd.read_csv(path_to_data + "metric_finalData.csv", index_col=0)
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
@@ -43,17 +43,25 @@ df
 from sklearn.preprocessing import StandardScaler
 
 X = df.iloc[:, [2, 4] + list(range(7, df.shape[1]))]
-l1 = list(X.index)
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-X = pd.DataFrame(X_scaled, columns=X.columns, index=list(X.index))
-X
-# print(min(X.describe().min))
-# print(max(X.describe().max))
+Xinfo = X.describe()
+print(Xinfo.loc['min'].min())
+print(Xinfo.loc['max'].max())
+
+
+# scaler = StandardScaler()
+# X_scaled = scaler.fit_transform(X)
+# X = pd.DataFrame(X_scaled, columns=X.columns, index=list(X.index))
+# Xinfo = X.describe()
+# print(Xinfo.loc['min'].min())
+# print(Xinfo.loc['max'].max())
 
 
 # -
 
-l2 = list(X.index)
+df.where(df == 2240315.03125).stack()
 
+ndti_S0_p100
 
+for _ in df.columns:
+    print(_)
+    
