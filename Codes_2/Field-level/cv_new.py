@@ -1,4 +1,3 @@
-
 # +
 import pandas as pd
 
@@ -48,8 +47,6 @@ print("\n")
 print(df1["ResidueType"].value_counts(), df2["ResidueType"].value_counts())
 print("\n")
 print(df1["ResidueCov"].value_counts(), df2["ResidueCov"].value_counts())
-
-
 # -
 
 df.shape
@@ -104,9 +101,6 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         return self.rf.feature_importances_
     
 
-# -
-
-np.concatenate((np.arange(0,1,0.3), np.arange(2,12,3)))
 
 # +
 import numpy as np
@@ -518,7 +512,7 @@ plt.ylabel('Frequency', fontsize=14)
 plt.xticks([0,  1], fontsize=12)
 plt.yticks(fontsize=12)
 plt.legend(title='Croptype', labels=labels_with_counts,
-           title_fontsize='13', fontsize='12')
+           title_fontsize='5', fontsize='10')
 plt.title('Histogram of Loss Across Each Croptype', fontsize=16)
 plt.grid(axis='y', linestyle='--', linewidth=0.7, alpha=0.7)
 # Table to show the counts below the plot
