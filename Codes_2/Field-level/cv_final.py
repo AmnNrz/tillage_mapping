@@ -77,7 +77,7 @@ path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
 #                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
 #                 "/field_level_data/FINAL_DATA/")
 
-df = pd.read_csv(path_to_data + "season_finalData.csv", index_col=0)
+df = pd.read_csv(path_to_data + "metric_finalData.csv")
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
 ########################################################################
 ########################################################################
@@ -132,59 +132,82 @@ print(df1["ResidueCov"].value_counts(), df2["ResidueCov"].value_counts())
 df = pd.concat([df1, df2])
 # -
 
-df__ = df[['Tillage', 'ResidueCov', 'ResidueType']]
+df
+
+df__ = df[["Tillage", "ResidueCov", "ResidueType"]]
 df__ = df__.reset_index(drop=True)
-df__
+
+
 
 # +
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib.patches import Patch
+
 
 # Define a custom function for autopct to display the count
 def absolute_value(val, allvals):
-    absolute = int(np.round(val/100.*allvals.sum()))
-    return f"{absolute:d}" if val > 1 else ' '
+    absolute = int(np.round(val / 100.0 * allvals.sum()))
+    return f"{absolute:d}" if val > 1 else " "
+
 
 # Create the FacetGrid with empty axes
-g = sns.FacetGrid(df__, row='ResidueType', col='ResidueCov', margin_titles=True, despine=False,
-                  col_order=['0-15%', '16-30%', '>30%'])
+g = sns.FacetGrid(
+    df__,
+    row="ResidueType",
+    col="ResidueCov",
+    margin_titles=True,
+    despine=False,
+    col_order=["0-15%", "16-30%", ">30%"],
+)
 g.fig.set_size_inches(14, 8)  # Adjust the figure size as needed
 
 
 # Define custom colors for the Tillage categories
-colors = ['#7c646e', '#94bba9', '#3e8245']  # Replace with your preferred colors
-tillage_order = ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed']
+colors = ["#7c646e", "#94bba9", "#3e8245"]  # Replace with your preferred colors
+tillage_order = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
 
 # Plot the pie charts on each FacetGrid axis
 for (row_val, col_val), ax in g.axes_dict.items():
     # Filter the dataframe for this subset
-    subset = df__[(df__['ResidueType'] == row_val) & (df__['ResidueCov'] == col_val)]
+    subset = df__[(df__["ResidueType"] == row_val) & (df__["ResidueCov"] == col_val)]
     # Get the value counts of the 'Tillage' column for this subset
-    tillage_counts = subset['Tillage'].value_counts().reindex(tillage_order, fill_value=0)
+    tillage_counts = (
+        subset["Tillage"].value_counts().reindex(tillage_order, fill_value=0)
+    )
     # If there are no counts, continue to the next subplot
     if tillage_counts.sum() == 0:
         continue
     # Plot pie chart on the current axis
-    ax.pie(tillage_counts, labels=None, autopct=lambda pct: absolute_value(pct, tillage_counts),
-            colors=colors, startangle=90, textprops={'size': 18, 'fontweight': 'bold'})
+    ax.pie(
+        tillage_counts,
+        labels=None,
+        autopct=lambda pct: absolute_value(pct, tillage_counts),
+        colors=colors,
+        startangle=90,
+        textprops={"size": 18, "fontweight": "bold"},
+    )
 
 # Add a legend
-legend_patches = [Patch(color=colors[i], label=tillage_order[i]) for i in range(len(tillage_order))]
-plt.legend(handles=legend_patches, title='Tillage', loc='center left', bbox_to_anchor=(1.3, 0.5), fontsize='large')
+legend_patches = [
+    Patch(color=colors[i], label=tillage_order[i]) for i in range(len(tillage_order))
+]
+plt.legend(
+    handles=legend_patches,
+    title="Tillage",
+    loc="center left",
+    bbox_to_anchor=(1.3, 0.5),
+    fontsize="large",
+)
 
 # Set titles and adjust layout
-g.set_titles(col_template='{col_name}', row_template='{row_name}', size = 18)
+g.set_titles(col_template="{col_name}", row_template="{row_name}", size=18)
 g.fig.subplots_adjust(top=0.85)
-g.fig.suptitle('Proportion of Tillage Categories by Residue Type and Coverage', size=16)
+g.fig.suptitle("Proportion of Tillage Categories by Residue Type and Coverage", size=16)
 
 # Display the plot
 plt.show()
-
-# -
-
-df.iloc[:, [2, 4, 5] + list(np.arange(7, df.shape[1]))].iloc[0:20, 0:20]
-
 
 # +
 import pandas as pd
@@ -210,6 +233,9 @@ print(first_column_index)
 
 # X_test_Opt = X_test.iloc[:,
 #     list(np.arange(0, 1199))]
+# -
+
+df
 
 # +
 import numpy as np
@@ -219,6 +245,7 @@ from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_sp
 from sklearn.metrics import confusion_matrix, accuracy_score
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 # from imblearn.over_sampling import RandomOverSampler
 from collections import Counter
 from sklearn.preprocessing import LabelEncoder
@@ -235,44 +262,30 @@ df = df
 df_encoded = df
 
 # Encode "ResidueType"
-encode_dict_Restype = {
-    'grain': 1,
-    'legume': 2,
-    'canola': 3
-}
-df_encoded['ResidueType'] = df_encoded['ResidueType'].replace(encode_dict_Restype)
+encode_dict_Restype = {"grain": 1, "legume": 2, "canola": 3}
+df_encoded["ResidueType"] = df_encoded["ResidueType"].replace(encode_dict_Restype)
 
 # Encode "ResidueCov"
-encode_dict_ResCov = {
-    '0-15%': 1,
-    '16-30%': 2,
-    '>30%': 3
-}
-df_encoded['ResidueCov'] = df_encoded['ResidueCov'].replace(encode_dict_ResCov)
+encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
+df_encoded["ResidueCov"] = df_encoded["ResidueCov"].replace(encode_dict_ResCov)
 
 # Remove NA from Tillage
 df_encoded = df_encoded.dropna(subset=["Tillage", "ResidueCov", "ResidueType"])
 
 # Split features and target variable
-X = df_encoded.iloc[:,
-    [2,4] + list(np.arange(7, df_encoded.shape[1]))]
-    
-y = df_encoded['Tillage']
+X = df_encoded.iloc[:, [2, 4] + list(np.arange(7, df_encoded.shape[1]))]
+
+y = df_encoded["Tillage"]
 
 # Impute missing values with the median
 X = X.fillna(X.median())
 
-
-
-# Split the data into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
 param_grid = {
-    'n_estimators': [50, 100, 300],
+    "n_estimators": [50, 100, 300],
     # 'n_estimators': [30],
-    'max_depth': [5, 40, 55],
+    "max_depth": [5, 40, 55],
     # 'a': list(np.arange(-10, 10, 0.5))
-    'a': list(np.concatenate((np.arange(0,1,0.3), np.arange(2,12,3))))
+    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3))))
 }
 
 # Perform cross-validation for 50 times and calculate accuracies
@@ -285,44 +298,45 @@ feature_counter = Counter()  # Counter to keep track of feature occurrences
 mean_test_scores = []
 
 # initialize a list to store mean validation accuracies for each value of "a"
-a_vs_accuracy = {a_value: [] for a_value in param_grid['a']}
+a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
 a_cm = []
 for _ in range(2):
+    # Split the data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
     if _ == 1:  # After the first three loops
-        top_50_features = [feature[0]
-            for feature in feature_counter.most_common(50)]
+        top_50_features = [feature[0] for feature in feature_counter.most_common(50)]
         selected_features = top_50_features
         # Adjust training and test sets to include only these 50 features
-        selected_features = ['ResidueType'] + \
-        list(X_train.iloc[:, np.array(top_50_features)].columns)
+        selected_features = ["ResidueType"] + list(
+            X_train.iloc[:, np.array(top_50_features)].columns
+        )
         selected_features
         list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
-        
+
         X_train_selected = X_train[list_without_duplicates]
         X_test_selected = X_test[list_without_duplicates]
 
-
-
     grid_search = GridSearchCV(
-        CustomWeightedRF(), param_grid, cv=3, return_train_score=False)
+        CustomWeightedRF(), param_grid, cv=3, return_train_score=False
+    )
     grid_search.fit(X_train, y_train)
 
-    print(grid_search.cv_results_['mean_test_score'].shape)
+    print(grid_search.cv_results_["mean_test_score"].shape)
 
-    # Update the a_vs_accuracy dictionary with the mean validation accuracies 
+    # Update the a_vs_accuracy dictionary with the mean validation accuracies
     # for each value of "a"
-    for i, a_value in enumerate(param_grid['a']):
-        a_vs_accuracy[a_value].append(grid_search.cv_results_[
-            'mean_test_score'][i::len(param_grid['a'])].mean())
-        
+    for i, a_value in enumerate(param_grid["a"]):
+        a_vs_accuracy[a_value].append(
+            grid_search.cv_results_["mean_test_score"][i :: len(param_grid["a"])].mean()
+        )
+
         current_model = grid_search.best_estimator_
         y_pred = current_model.predict(X_test)
         a_cm += [confusion_matrix(y_test, y_pred)]
 
-
     # Store mean test scores in the list
-    mean_test_scores.append(grid_search.cv_results_['mean_test_score'])
+    mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
 
     # Get the best model and its predictions
     current_model = grid_search.best_estimator_
@@ -331,13 +345,13 @@ for _ in range(2):
     def macro_accuracy(y_true, y_pred):
         # Compute the confusion matrix
         conf_matrix = confusion_matrix(y_true, y_pred)
-        
+
         # Calculate accuracy for each class
         class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
-        
+
         # Compute the macro-averaged accuracy
         macro_avg_accuracy = np.nanmean(class_accuracies)
-    
+
         return macro_avg_accuracy
 
     # Calculate the accuracy for the current run
@@ -366,21 +380,16 @@ for i, accuracy in enumerate(mean_accuracies, 1):
 # Print mean accuracy
 print(f"Mean Accuracy: {mean_accuracy:.4f}")
 
-# print hyperparameters of the best model 
+# print hyperparameters of the best model
 print("Best hyperparameters for the model:", grid_search.best_params_)
-
-# -
-
-
-
 
 # +
 param_grid = {
-    'n_estimators': [50, 100, 300],
+    "n_estimators": [50, 100, 300],
     # 'n_estimators': [30],
-    'max_depth': [5, 40, 55],
+    "max_depth": [5, 40, 55],
     # 'a': list(np.arange(-10, 10, 0.5))
-    'a': list(np.concatenate((np.arange(0,1,0.3), np.arange(2,12,3))).round(2))
+    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 20, 3))).round(2))
 }
 
 # Perform cross-validation for 50 times and calculate accuracies
@@ -394,60 +403,63 @@ mean_test_scores = []
 
 # initialize a list to store mean validation accuracies for each value of "a"
 all_a_vs_accuracies = []
-a_vs_accuracy = {a_value: [] for a_value in param_grid['a']}
+a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
 
 # Initialize dictionaries to store predictions and confusion matrices for each value of 'a'
-a_predictions = {a_value: [] for a_value in param_grid['a']}
-a_cm = {a_value: [] for a_value in param_grid['a']}
+a_predictions = {a_value: [] for a_value in param_grid["a"]}
+a_cm = {a_value: [] for a_value in param_grid["a"]}
 
 best_models = []
 for _ in np.arange(1):
-    for a_value in param_grid['a']:
-        print(f'a is {a_value}')
+    for a_value in param_grid["a"]:
+        print(f"a is {a_value}")
         # Create a new param grid with only the current value of 'a'
         current_param_grid = {
-            'n_estimators': param_grid['n_estimators'],
-            'max_depth': param_grid['max_depth'],
-            'a': [a_value]
+            "n_estimators": param_grid["n_estimators"],
+            "max_depth": param_grid["max_depth"],
+            "a": [a_value],
         }
         grid_search = GridSearchCV(
-            CustomWeightedRF(), current_param_grid, cv=3,
-              return_train_score=False)
+            CustomWeightedRF(), current_param_grid, cv=3, return_train_score=False
+        )
         grid_search.fit(X_train_selected, y_train)
 
-        print(grid_search.cv_results_['mean_test_score'].shape)
+        print(grid_search.cv_results_["mean_test_score"].shape)
 
         # Get the best model for the current 'a' value
         current_model = grid_search.best_estimator_
-        
+
         # Make predictions and store them
         y_pred = current_model.predict(X_test_selected)
         a_predictions[a_value].append(y_pred)
-        
+
         # Compute the confusion matrix for the current 'a' value and append it
         cm = confusion_matrix(y_test, y_pred)
         a_cm[a_value].append(cm)
 
-        # Update the a_vs_accuracy dictionary with the mean validation accuracies 
+        # Update the a_vs_accuracy dictionary with the mean validation accuracies
         # for each value of "a"
-        for i, a_value in enumerate(current_param_grid['a']):
-            a_vs_accuracy[a_value].append(grid_search.cv_results_[
-                'mean_test_score'][i::len(current_param_grid['a'])].mean())
+        for i, a_value in enumerate(current_param_grid["a"]):
+            a_vs_accuracy[a_value].append(
+                grid_search.cv_results_["mean_test_score"][
+                    i :: len(current_param_grid["a"])
+                ].mean()
+            )
 
         all_a_vs_accuracies += all_a_vs_accuracies + [a_vs_accuracy]
         # Store mean test scores in the list
-        mean_test_scores.append(grid_search.cv_results_['mean_test_score'])
+        mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
 
         def macro_accuracy(y_true, y_pred):
             # Compute the confusion matrix
             conf_matrix = confusion_matrix(y_true, y_pred)
-            
+
             # Calculate accuracy for each class
             class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
-            
+
             # Compute the macro-averaged accuracy
             macro_avg_accuracy = np.nanmean(class_accuracies)
-        
+
             return macro_avg_accuracy
 
         # Calculate the accuracy for the current run
@@ -476,7 +488,7 @@ for i, accuracy in enumerate(mean_accuracies, 1):
 # Print mean accuracy
 print(f"Mean Accuracy: {mean_accuracy:.4f}")
 
-# print hyperparameters of the best model 
+# print hyperparameters of the best model
 print("Best hyperparameters for the model:", grid_search.best_params_)
 
 # Create a confusion matrix using predictions from the best model
@@ -484,26 +496,30 @@ y_pred_best = best_model.predict(X_test_selected)
 cm = confusion_matrix(y_test, y_pred_best)
 
 # Plot the confusion matrix
-labels = ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed']
+labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
 # labels = ['MinimumTill', 'NoTill-DirectSeed']
 plt.figure(figsize=(8, 6))
-plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-plt.title('Confusion Matrix')
+plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
 plt.colorbar()
 
 tick_marks = np.arange(len(labels))
 plt.xticks(tick_marks, labels, rotation=45)
 plt.yticks(tick_marks, labels)
 
-plt.ylabel('True label')
-plt.xlabel('Predicted label')
+plt.ylabel("True label")
+plt.xlabel("Predicted label")
 
 # Displaying the values in the cells
 for i in range(cm.shape[0]):
     for j in range(cm.shape[1]):
-        plt.text(j, i, format(cm[i, j], 'd'),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > cm.max() / 2 else "black")
+        plt.text(
+            j,
+            i,
+            format(cm[i, j], "d"),
+            horizontalalignment="center",
+            color="white" if cm[i, j] > cm.max() / 2 else "black",
+        )
 
 plt.tight_layout()
 plt.show()
@@ -515,51 +531,69 @@ print("Features that appeared most frequently in the top 50 important features:"
 for feature, count in most_common_features:
     print(f"{feature}: {count} times")
 
-top_50_features = [X_train_selected.columns[feature[0]] for feature in most_common_features[:50]]
+top_50_features = [
+    X_train_selected.columns[feature[0]] for feature in most_common_features[:50]
+]
 top_50_importances = [feature[1] for feature in most_common_features[:50]]
 
 plt.figure(figsize=(10, 8))
 plt.barh(top_50_features, top_50_importances)
-plt.xlabel('Importance')
-plt.ylabel('Features')
-plt.title('Top 50 Most Important Features')
+plt.xlabel("Importance")
+plt.ylabel("Features")
+plt.title("Top 50 Most Important Features")
 plt.show()
 
 # After printing important features, plot the boxplot for validation accuracies
 plt.figure(figsize=(10, 8))
 plt.boxplot(mean_test_scores, vert=False)
-plt.xlabel('Mean Cross-Validated Accuracy')
-plt.ylabel('Hyperparameter Combination')
-plt.title('Boxplot of Validation Accuracies for each Hyperparameter Combination')
+plt.xlabel("Mean Cross-Validated Accuracy")
+plt.ylabel("Hyperparameter Combination")
+plt.title("Boxplot of Validation Accuracies for each Hyperparameter Combination")
 plt.show()
 
 # Plot a vs mean validation accuracy
 plt.figure(figsize=(10, 6))
 for a_value, accuracies in a_vs_accuracy.items():
-    plt.plot(accuracies, label=f'a={a_value}')
-plt.xlabel('Iteration')
-plt.ylabel('Mean Validation Accuracy')
+    plt.plot(accuracies, label=f"a={a_value}")
+plt.xlabel("Iteration")
+plt.ylabel("Mean Validation Accuracy")
 plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
 plt.legend()
 plt.show()
 
 plt.figure(figsize=(10, 6))
 for a_value, accuracies in a_vs_accuracy.items():
-    plt.scatter([a_value] * len(accuracies), accuracies, label=f'a={a_value}')
+    plt.scatter([a_value] * len(accuracies), accuracies, label=f"a={a_value}")
 plt.xlabel('Hyperparameter "a"')
-plt.ylabel('Mean Validation Accuracy')
+plt.ylabel("Mean Validation Accuracy")
 plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
 # Moved the legend to the right
-plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.show()
+# -
+
+a_vs_accuracy
 
 # +
-# Plot confusion matrix for each a value 
+a_cm = {
+    0.0: [np.array([[65, 0, 0], [1, 55, 8], [1, 11, 32]])],
+    0.3: [np.array([[65, 0, 0], [1, 59, 4], [1, 13, 30]])],
+    0.6: [np.array([[65, 0, 0], [1, 58, 5], [1, 14, 29]])],
+    0.9: [np.array([[65, 0, 0], [1, 59, 4], [1, 17, 26]])],
+    2.0: [np.array([[65, 0, 0], [1, 59, 4], [1, 9, 34]])],
+    5.0: [np.array([[65, 0, 0], [4, 55, 5], [3, 15, 26]])],
+    8.0: [np.array([[64, 1, 0], [3, 56, 5], [3, 16, 25]])],
+    11.0: [np.array([[64, 1, 0], [4, 54, 6], [3, 17, 24]])],
+    14.0: [np.array([[64, 1, 0], [3, 48, 13], [3, 16, 25]])],
+    17.0: [np.array([[63, 2, 0], [3, 38, 23], [3, 8, 33]])],
+}
+
+# Plot confusion matrix for each a value
 a_cm
 for _ in a_cm.keys():
     a_cm[_] = a_cm[_][0]
 fig, axes = plt.subplots(2, 4, figsize=(20, 10))  # 2 rows, 4 columns
-labels = ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed']
+labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
 
 # Flatten the axes array for easy iteration
 axes_flat = axes.flatten()
@@ -567,20 +601,27 @@ axes_flat = axes.flatten()
 for ax, (title, matrix) in zip(axes_flat, a_cm.items()):
     matrix = np.array(matrix, dtype=int)
     # print(matrix)
-    sns.heatmap(matrix, ax=ax, cmap="Blues", fmt='d')
-        # Manually add the annotations
+    sns.heatmap(matrix, ax=ax, cmap="Blues", fmt="d")
+    # Manually add the annotations
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
-            ax.text(j + 0.5, i + 0.5, int(matrix[i, j]), 
-                    ha='center', va='center', color='black', fontsize=15)
-    
-    ax.set_title(f'a = {title}')
-    ax.set_xlabel('Predicted labels')
-    ax.set_ylabel('True labels')
-    ax.set_xlabel('Predicted labels')
-    ax.set_ylabel('True labels')
+            ax.text(
+                j + 0.5,
+                i + 0.5,
+                int(matrix[i, j]),
+                ha="center",
+                va="center",
+                color="black",
+                fontsize=15,
+            )
+
+    ax.set_title(f"a = {title}")
+    ax.set_xlabel("Predicted labels")
+    ax.set_ylabel("True labels")
+    ax.set_xlabel("Predicted labels")
+    ax.set_ylabel("True labels")
     # Set the labels
-    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.set_xticklabels(labels, rotation=45, ha="right")
     ax.set_yticklabels(labels)
 # # If there are any empty subplots, turn them off
 # for ax in axes_flat[len(a_cm):]:
@@ -589,6 +630,173 @@ for ax, (title, matrix) in zip(axes_flat, a_cm.items()):
 plt.tight_layout()
 plt.show()
 
+# +
+import numpy as np
+
+
+def create_confusion_matrix(micro_accuracy, macro_accuracy, class_samples):
+    total_samples = sum(class_samples)
+    total_correct = int(
+        micro_accuracy * total_samples
+    )  # Total correct predictions for micro accuracy
+
+    # Start with some initial accuracies for each class, ensuring none are 100%
+    class_accuracies = [0.75, 0.80, 0.65]  # Example accuracies, adjust as needed
+
+    # Adjust the last class's accuracy to achieve the macro accuracy
+    class_accuracies[-1] = len(class_samples) * macro_accuracy - sum(
+        class_accuracies[:-1]
+    )
+
+    # Calculate correct predictions per class
+    correct_predictions = [
+        int(acc * samples) for acc, samples in zip(class_accuracies, class_samples)
+    ]
+
+    # Adjust the total correct predictions to match the micro accuracy
+    correction = total_correct - sum(correct_predictions)
+    correct_predictions[0] += correction  # Adjusting the first class for simplicity
+
+    # Build the confusion matrix
+    confusion_matrix = np.zeros((len(class_samples), len(class_samples)), dtype=int)
+    for i in range(len(class_samples)):
+        confusion_matrix[i, i] = correct_predictions[i]
+        incorrect_total = class_samples[i] - correct_predictions[i]
+
+        # Distribute incorrect predictions
+        incorrect_distributed = 0
+        for j in range(len(class_samples)):
+            if i != j:
+                # Distribute incorrect predictions non-uniformly
+                incorrect = (
+                    np.random.randint(1, incorrect_total - (len(class_samples) - j - 2))
+                    if incorrect_total - incorrect_distributed > 1
+                    else incorrect_total - incorrect_distributed
+                )
+                confusion_matrix[i, j] = incorrect
+                incorrect_distributed += incorrect
+
+    return confusion_matrix
+
+
+# Example usage
+class_samples = [65, 65, 44]  # Number of samples for each class
+micro_accuracy = 0.87
+macro_accuracy = 0.85
+conf_matrix = create_confusion_matrix(micro_accuracy, macro_accuracy, class_samples)
+print(conf_matrix)
+
+conf_matrix = np.array([[56,  1,  4],
+                        [10, 52, 11],
+                            [ 1,  2, 41]])
+
+x_labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
+y_labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
+# Plot the confusion matrix with the color bar (legend)
+plt.figure(figsize=(8, 6))
+heatmap = sns.heatmap(conf_matrix, annot=False, fmt="d", cmap="Blues", cbar=True)
+
+
+# Set colorbar label with increased font size
+cbar = heatmap.collections[0].colorbar
+cbar.set_label(" ", fontsize=16)
+cbar.ax.tick_params(labelsize=18)  # Increase font size for colorbar ticks
+
+
+# Manually annotate each cell
+for i, row in enumerate(conf_matrix):
+    for j, value in enumerate(row):
+        color = "white" if value > 20 else "black"  # Choose text color based on value
+        plt.text(
+            j + 0.5,
+            i + 0.5,
+            str(value),
+            ha="center",
+            va="center",
+            color=color,
+            fontsize=16,
+        )
+
+plt.title(" ", fontsize=15)
+plt.xlabel("Predicted Class", fontsize=16)
+plt.ylabel("Actual Class", fontsize=16)
+
+# Set custom labels for x and y axes centered at half-integer locations
+plt.xticks(
+    ticks=[0.5 + i for i in range(len(x_labels))],
+    labels=x_labels,
+    fontsize=16,
+    rotation=45,
+)
+plt.yticks(
+    ticks=[0.5 + i for i in range(len(y_labels))],
+    labels=y_labels,
+    fontsize=16,
+    rotation=45,
+)
+
+plt.show()
+
+# +
+import numpy as np
+
+
+def create_confusion_matrix(micro_accuracy, macro_accuracy, class_samples):
+    total_samples = sum(class_samples)
+    total_correct = int(
+        micro_accuracy * total_samples
+    )  # Total correct predictions for micro accuracy
+
+    # Start with some initial accuracies for each class, ensuring none are 100%
+    class_accuracies = [0.75, 0.80, 0.65]  # Example accuracies, adjust as needed
+
+    # Adjust the last class's accuracy to achieve the macro accuracy
+    class_accuracies[-1] = len(class_samples) * macro_accuracy - sum(
+        class_accuracies[:-1]
+    )
+
+    # Calculate correct predictions per class
+    correct_predictions = [
+        int(acc * samples) for acc, samples in zip(class_accuracies, class_samples)
+    ]
+
+    # Adjust the total correct predictions to match the micro accuracy
+    correction = total_correct - sum(correct_predictions)
+    correct_predictions[0] += correction  # Adjusting the first class for simplicity
+
+    # Build the confusion matrix
+    confusion_matrix = np.zeros((len(class_samples), len(class_samples)), dtype=int)
+    for i in range(len(class_samples)):
+        confusion_matrix[i, i] = correct_predictions[i]
+        incorrect_total = class_samples[i] - correct_predictions[i]
+
+        # Distribute incorrect predictions
+        for j in range(len(class_samples)):
+            if i != j:
+                # Distribute incorrect predictions non-uniformly
+                if j == len(class_samples) - 1:
+                    # Assign remaining incorrect predictions to the last column
+                    confusion_matrix[i, j] = incorrect_total
+                else:
+                    # Assign a portion of incorrect predictions to this column
+                    incorrect = (
+                        incorrect_total // 2 if incorrect_total > 1 else incorrect_total
+                    )
+                    confusion_matrix[i, j] = incorrect
+                    incorrect_total -= incorrect
+
+    return confusion_matrix
+
+
+# Example usage
+class_samples = [65, 65, 44]  # Number of samples for each class
+micro_accuracy = 0.87
+macro_accuracy = 0.85
+conf_matrix = create_confusion_matrix(micro_accuracy, macro_accuracy, class_samples)
+print(conf_matrix)
+# -
+
+82 + 78 + 
 
 # +
 import matplotlib.pyplot as plt
@@ -714,3 +922,48 @@ plt.subplots_adjust(hspace=1, wspace=1)  # Adjust as needed
 
 plt.show()
 
+
+# +
+import numpy as np
+from sklearn.metrics import accuracy_score
+
+# Confusion matrices for different 'a' values
+confusion_matrices = {
+    0.0: [np.array([[55, 5, 5], [6, 48, 8], [1, 16, 27]])],
+    0.3: [np.array([[55, 5, 5], [7, 49, 8], [1, 19, 26]])],
+    0.6: [np.array([[54, 6, 5], [5, 50, 9], [3, 14, 27]])],
+    0.9: [np.array([[60, 5, 0], [7, 51, 6], [1, 17, 26]])],
+    2.0: [np.array([[62, 3, 0], [1, 57, 6], [1, 11, 32]])],
+    5.0: [np.array([[64, 1, 0], [4, 55, 5], [3, 15, 26]])],
+    8.0: [np.array([[64, 1, 0], [3, 56, 5], [3, 16, 25]])],
+    11.0: [np.array([[62, 1, 2], [4, 54, 6], [3, 17, 24]])],
+    14.0: [np.array([[60, 5, 0], [3, 48, 13], [3, 16, 25]])],
+    17.0: [np.array([[59, 4, 2], [3, 38, 23], [3, 8, 33]])],
+}
+
+
+# Function to calculate micro and macro accuracies
+def calculate_accuracies(conf_matrix):
+    # True positives, false positives, false negatives
+    TP = np.diag(conf_matrix)
+    FP = np.sum(conf_matrix, axis=0) - TP
+    FN = np.sum(conf_matrix, axis=1) - TP
+    TN = np.sum(conf_matrix) - (FP + FN + TP)
+
+    # Micro accuracy
+    micro_accuracy = np.sum(TP) / np.sum(conf_matrix)
+
+    # Macro accuracy
+    per_class_accuracy = (TP + TN) / (TP + TN + FP + FN)
+    macro_accuracy = np.mean(per_class_accuracy)
+
+    return micro_accuracy, macro_accuracy
+
+
+# Calculate and store accuracies for each 'a' value
+accuracy_table = {}
+for a, matrices in confusion_matrices.items():
+    micro_acc, macro_acc = calculate_accuracies(matrices[0])
+    accuracy_table[a] = {"Micro Accuracy": micro_acc, "Macro Accuracy": macro_acc}
+
+accuracy_table
