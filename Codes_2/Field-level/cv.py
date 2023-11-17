@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: tillmap
 #     language: python
@@ -18,14 +18,15 @@
 import pandas as pd
 
 # # Read data
-path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-                "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
+# path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+#                 "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+#                 "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
 
-# path_to_data = ("/home/amnnrz/OneDrive - "
-#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data/")
+path_to_data = ("/home/amnnrz/OneDrive - "
+                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
+                "/field_level_data/FINAL_DATA/")
 
-df = pd.read_csv(path_to_data + "metric_finalDATA.csv", index_col=0)
+df = pd.read_csv(path_to_data + "metric_finalData.csv", index_col=0)
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
 
 # Split df into two dataframes. It is important that each category
@@ -115,37 +116,7 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         return self.rf.feature_importances_
     
 
-    from sklearn.svm import SVC
-    class CustomWeightedSVM(BaseEstimator, ClassifierMixin):
-        def __init__(self, C=1.0, kernel='rbf', gamma='scale', **kwargs):
-            self.C = C
-            self.kernel = kernel
-            self.gamma = gamma
-            self.svm = SVC(C=self.C, kernel=self.kernel, gamma=self.gamma,
-                            probability=True, **kwargs)
-        
-        def fit(self, X, y, **kwargs):
-            target_weights_dict = calculate_custom_weights(y, self.a)
-            target_weights = np.array([target_weights_dict[sample] for sample in y])
-            
-            # Rest of the weight calculation can stay same
-            feature_cols = ['ResidueType']
-            feature_weights = np.zeros(X.shape[0])
-            for col in feature_cols:
-                feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
-                feature_weights += X[col].map(feature_weights_dict).values
 
-            sample_weights = target_weights * feature_weights
-            
-            # Now fit the SVC with the computed weights
-            self.svm.fit(X, y, sample_weight=sample_weights)
-            return self
-        
-        def predict(self, X, **kwargs):
-            return self.svm.predict(X)
-        
-        def predict_proba(self, X, **kwargs):
-            return self.svm.predict_proba(X)
 #%%
 
 # +
@@ -159,6 +130,7 @@ import matplotlib.pyplot as plt
 # from imblearn.over_sampling import RandomOverSampler
 from collections import Counter
 from sklearn.preprocessing import LabelEncoder
+from collections import OrderedDict
 
 
 # df1 = df1.drop(columns='ResidueCov')
@@ -208,11 +180,11 @@ X = X.fillna(X.median())
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
 param_grid = {
-    'n_estimators': [40, 50, 100, 300],
+    'n_estimators': [40, 50, 100, 300, 500, 1000],
     # 'n_estimators': [30],
-    'max_depth': [5, 40, 55],
+    'max_depth': [5, 40, 55, 70, 100],
     # 'a': list(np.arange(-10, 10, 0.5))
-    'a': [0, 0.2, 0.5, 1]
+    'a': [0, 0.2, 0.5, 1, 2, 5, 10]
 }
 
 # Perform cross-validation for 50 times and calculate accuracies
@@ -227,18 +199,23 @@ mean_test_scores = []
 # initialize a list to store mean validation accuracies for each value of "a"
 a_vs_accuracy = {a_value: [] for a_value in param_grid['a']}
 
-for _ in range(5):
+for _ in range(10):
 
     if _ == 5:  # After the first three loops
         top_50_features = [feature[0]
             for feature in feature_counter.most_common(50)]
         selected_features = top_50_features
         # Adjust training and test sets to include only these 50 features
-        X_train = X_train[selected_features]
-        X_test = X_test[selected_features]
+        selected_features = ['ResidueType'] + \
+        list(X_train.iloc[:, np.array(top_50_features)].columns)
+        selected_features
+        list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
+        
+        X_train = X_train[list_without_duplicates]
+        X_test = X_test[list_without_duplicates]
 
     grid_search = GridSearchCV(
-        CustomWeightedRF(), param_grid, cv=5, return_train_score=False)
+        CustomWeightedRF(), param_grid, cv=3, return_train_score=False)
     grid_search.fit(X_train, y_train)
 
     print(grid_search.cv_results_['mean_test_score'].shape)
@@ -481,27 +458,225 @@ axes[-1].legend(handles=legend_handles, loc="lower right", title="max_depth")
 plt.tight_layout()
 plt.show()
 
-# -
-
-selected_features
 
 # +
+# from collections import OrderedDict
+# from sklearn.svm import SVC
+
+
 # selected_features = ['ResidueType'] + \
 #     list(X_train.iloc[:, np.array(top_50_features)].columns)
+# selected_features
+# list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
+# list_without_duplicates
+# X_train = X_train[list_without_duplicates]
+# X_test = X_test[list_without_duplicates]
+# print(X_train.shape, y_train.shape)
 
-selected_features
 
-X_train = X_train[selected_features]
-X_train.shape, y_train.shape
+class CustomWeightedSVM(BaseEstimator, ClassifierMixin):
+    def __init__(self, C=1.0, kernel='rbf', gamma='scale', degree=1,
+     coef0=0, shrinking=True, a= 1, **kwargs):
+        self.C = C
+        self.kernel = kernel
+        self.gamma = gamma
+        self.degree = degree
+        self.coef0 = coef0
+        self.shrinking = shrinking
+        self.a = a
+        self.svm = SVC(C=self.C, kernel=self.kernel, gamma=self.gamma,
+                        degree=self.degree, coef0=self.coef0,
+                         shrinking=self.shrinking, probability=True, **kwargs)
+    
+    def fit(self, X, y, **kwargs):
+        target_weights_dict = calculate_custom_weights(y, self.a)
+        target_weights = np.array([target_weights_dict[sample] for sample in y])
+        
+        # Rest of the weight calculation can stay same
+        feature_cols = ['ResidueType']
+        feature_weights = np.zeros(X.shape[0])
+        for col in feature_cols:
+            feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
+            feature_weights += X[col].map(feature_weights_dict).values
 
-# Adjust the param_grid to be suitable for SVC
+        sample_weights = target_weights * feature_weights
+        
+        # Now fit the SVC with the computed weights
+        self.svm.fit(X, y, sample_weight=sample_weights)
+        return self
+    
+    def predict(self, X, **kwargs):
+        return self.svm.predict(X)
+    
+    def predict_proba(self, X, **kwargs):
+        return self.svm.predict_proba(X)
+
 param_grid = {
-    'C': [0.1, 1, 10, 100],
-    'kernel': ['rbf', 'linear', 'poly', 'sigmoid'],
-    'gamma': ['scale', 'auto'],
-    'a': [0, 0.2, 0.5, 1]
+    'C': [0.1, 1, 10, 100],  # Regularization parameter. The strength of the regularization is inversely proportional to C.
+    'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],  # Specifies the kernel type to be used in the algorithm.
+    'gamma': ['scale', 'auto'],  # Kernel coefficient for 'rbf', 'poly', and 'sigmoid'.
+    'degree': [2, 3, 4],  # Degree of the polynomial kernel function ('poly'). Ignored by all other kernels.
+    'coef0': [0.0, 0.5, 1.0],  # Independent term in kernel function. It is only significant in 'poly' and 'sigmoid'.
+    'shrinking': [True, False],  # Whether to use the shrinking heuristic.
+    'a': [0, 0.2, 0.5, 1]  # Custom weight parameter for your algorithm.
 }
 
-grid_search = GridSearchCV(CustomWeightedSVM(), param_grid, cv=5, return_train_score=False)
 
+for _ in np.arange(10):
+
+    grid_search = GridSearchCV(CustomWeightedSVM(),
+     param_grid, cv=3, return_train_score=False)
+    grid_search.fit(X_train, y_train)
+    print(grid_search.cv_results_['mean_test_score'].shape)
+
+    # Update the a_vs_accuracy dictionary with the mean validation accuracies 
+    # for each value of "a"
+    for i, a_value in enumerate(param_grid['a']):
+        a_vs_accuracy[a_value].append(grid_search.cv_results_[
+            'mean_test_score'][i::len(param_grid['a'])].mean())
+
+
+    # Store mean test scores in the list
+    mean_test_scores.append(grid_search.cv_results_['mean_test_score'])
+
+    # Get the best model and its predictions
+    current_model = grid_search.best_estimator_
+    y_pred = current_model.predict(X_test)  # Use the test data for prediction
+
+    # Calculate the accuracy for the current run
+    val_accuracy = accuracy_score(y_test, y_pred)
+    print(_, ":", "Validation Accuracy is ", val_accuracy)
+    mean_accuracies.append(val_accuracy)
+
+    # Update the best model if the current model has a higher validation accuracy
+    if val_accuracy > best_val_accuracy:
+        best_model = current_model
+        best_val_accuracy = val_accuracy
+
+# +
+import pandas as pd
+path_to_data = ("/home/amnnrz/OneDrive - "
+                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
+                "/field_level_data/FINAL_DATA/")
+
+# X_train.to_csv(path_to_data + "X_train.csv")
+# X_test.to_csv(path_to_data + "X_test.csv")
+# y_train.to_csv(path_to_data + "y_train.txt")
+# y_test.to_csv(path_to_data + "y_test.txt")
+
+X_train = pd.read_csv(path_to_data + "X_train.csv", index_col=0)
+X_test = pd.read_csv(path_to_data + "X_test.csv", index_col=0)
+y_train = pd.read_csv(path_to_data + "y_train.txt", index_col=0)["ResidueCov"]
+y_test = pd.read_csv(path_to_data + "y_test.txt", index_col=0)["ResidueCov"]
+# -
+
+X_train_tensor = torch.tensor(X_train.values, dtype=torch.float32)
+y_train_tensor = torch.tensor(y_train.values, dtype=torch.long)  # Assuming y_train is a class label, not one-hot encoded
+X_test_tensor = torch.tensor(X_test.values, dtype=torch.float32)
+y_test_tensor = torch.tensor(y_test.values, dtype=torch.long)  # Assuming y_test is a class label, not one-hot encoded
+
+
+# +
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from skorch import NeuralNetClassifier
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.metrics import accuracy_score
+from skopt import BayesSearchCV
+from skopt.space import Real, Categorical, Integer
+
+
+
+
+
+# Define the PyTorch neural network
+class Net(nn.Module):
+    def __init__(self, num_input_features, num_units=10, nonlin=nn.ReLU()):
+        super(Net, self).__init__()
+        self.dense1 = nn.Linear(num_input_features, num_units)  # Adjust the input features accordingly
+        self.nonlin = nonlin
+        self.dropout = nn.Dropout(0.5)
+        self.dense2 = nn.Linear(num_units, num_units)
+        self.output = nn.Linear(num_units, 3)  # 3 classes
+
+    def forward(self, X):
+        X = self.nonlin(self.dense1(X))
+        X = self.dropout(X)
+        X = self.nonlin(self.dense2(X))
+        X = self.output(X)
+        return X
+
+class CustomNN(BaseEstimator, ClassifierMixin):
+    def __init__(self, num_input_features, module=Net, criterion=nn.CrossEntropyLoss, optimizer=optim.Adam, lr=0.01, max_epochs=10, batch_size=32, a=1):
+        self.num_input_features = num_input_features
+        self.module = module
+        self.criterion = criterion
+        self.optimizer = optimizer
+        self.lr = lr
+        self.max_epochs = max_epochs
+        self.batch_size = batch_size
+        self.a = a
+        self.clf = None
+
+    def fit(self, X, y):
+        self.clf = NeuralNetClassifier(
+            module=self.module(num_input_features=self.num_input_features),
+            criterion=self.criterion,
+            optimizer=self.optimizer,
+            lr=self.lr,
+            batch_size=self.batch_size,
+            max_epochs=self.max_epochs,
+            optimizer__weight_decay=self.a,  # Example of using the custom parameter 'a' as weight decay
+            # Add other relevant parameters and callbacks
+        )
+        self.clf.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.clf.predict(X)
+    
+    def predict_proba(self, X):
+        return self.clf.predict_proba(X)
+    
+    def set_params(self, **parameters):
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
+
+# Define the search space for Bayesian Optimization
+search_space = {
+    'lr': Real(1e-6, 1e-1, prior='log-uniform'),
+    'max_epochs': Integer(5, 50),
+    'batch_size': Categorical([16, 32, 64, 128]),
+    'module__num_units': Integer(10, 100),
+    'a': Real(1e-6, 1e-1, prior='log-uniform')  # Custom weight parameter for your algorithm
+}
+
+
+
+# Initialize Bayesian optimization
+bayes_search = BayesSearchCV(
+    estimator=CustomNN(num_input_features=X_train_tensor.shape[1], module=Net),
+    search_spaces=search_space,
+    n_iter=30,  # Number of iterations
+    cv=3,  # 3-fold cross-validation
+    n_jobs=1,  # Use all available cores
+    return_train_score=False,
+    refit=True,
+    random_state=42
+)
+
+# Perform the search
+bayes_search.fit(X_train_tensor, y_train_tensor)
+
+# Best model found
+best_model = bayes_search.best_estimator_
+
+# Predictions
+y_pred = best_model.predict(X_test_tensor)
+
+# Calculate the accuracy
+val_accuracy = accuracy_score(y_test, y_pred)
+print("Validation Accuracy is ", val_accuracy)
 
