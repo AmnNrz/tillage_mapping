@@ -370,4 +370,4 @@ slprj/
 
 .vscode/
 
-*.json
+settings.json
