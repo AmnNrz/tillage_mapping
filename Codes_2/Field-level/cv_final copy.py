@@ -361,6 +361,20 @@ first_column_index = next((i for i, col in enumerate(columns) if col.startswith(
 # If no such column is found, it will be None
 
 print(first_column_index)
+# -
+
+
+important_features = ['ResidueType', 'ResidueCov', 'sti_S0', 'ndi7_S0', 'crc_S0', 'ndti_S0',
+       'R_S2', 'sndvi_S2', 'B_S0', 'SWIR2_S2', 'sti_S3', 'sndvi_S0', 'ndi5_S2',
+       'ndvi_S1', 'evi_S3', 'ndvi_S0', 'sndvi_S3', 'aspect_savg', 'evi_S2',
+       'crc_S2', 'gcvi_S2', 'sti_S1', 'NIR_S0', 'gcvi_S3', 'aspect', 'G_S0',
+       'evi_S0', 'aspect_corr', 'ndvi_S2', 'SWIR1_S1', 'ndti_S1', 'ndi5_S0',
+       'G_S2', 'NIR_S2', 'G_S3', 'elevation', 'ndi5_S3', 'gcvi_S0',
+       'elevation_idm', 'ndi7_S2', 'B_S2', 'evi_S1', 'sti_S2', 'sndvi_S1',
+       'ndti_S2', 'ndti_S3', 'aspect_idm', 'B_S3', 'gcvi_S1_asm', 'SWIR1_S0',
+       'slope_ent']
+important_features
+
 
 
 # +
@@ -391,7 +405,7 @@ df_encoded = df_encoded.dropna(subset=["Tillage", "ResidueCov", "ResidueType"])
 
 # Split features and target variable
 # X = df_encoded.iloc[:, [2, 4] + list(np.arange(7, df_encoded.shape[1]))]
-X = df_encoded.iloc[:, [2, 4] + list(np.arange(7, df_encoded.shape[1]))]
+X = df_encoded.loc[:, important_features]
 
 # y = df_encoded["Tillage"]
 y = df_encoded["Tillage"]
@@ -433,8 +447,11 @@ for _ in range(5):
         selected_features
         list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
 
-        X_train_selected = X_train[list_without_duplicates]
-        X_test_selected = X_test[list_without_duplicates]
+        # X_train_selected = X_train[list_without_duplicates]
+        # X_test_selected = X_test[list_without_duplicates]
+
+        X_train_selected = X_train[important_features]
+        X_test_selected = X_test[important_features]
 
     grid_search = GridSearchCV(
         CustomWeightedRF(), param_grid, cv=3, return_train_score=False
@@ -529,7 +546,7 @@ a_predictions = {a_value: [] for a_value in param_grid["a"]}
 a_cm = {a_value: [] for a_value in param_grid["a"]}
 
 best_models = []
-for _ in np.arange(15):
+for _ in np.arange(2):
     for a_value in param_grid["a"]:
         print(f"a is {a_value}")
         # Create a new param grid with only the current value of 'a'
@@ -691,50 +708,70 @@ plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.show()
 # -
 
-a_vs_accuracy
+X_train_selected
+
+X_train_selected.columns
 
 # +
+from joblib import dump
+from joblib import load
+
+path_to_model = (
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "Projects/Tillage_Mapping/Data/field_level_data/best_models/"
+)
+dump(grid_search.best_estimator_, path_to_model + "best_Tillage_estimator.joblib")
+
+# +
+import matplotlib.pyplot as plt
+
+# Your data
 a_vs_accuracy = {
-    0.001: [0.78],
+    .001: [0.78],
     0.3: [0.79],
-    0.6: [0.86],
+    .6: [0.86],
     0.9: [0.86],
     2.0: [0.83],
-    5.0: [0.84],
-    8.0: [0.85],
-    11.0: [0.83],
-    14.0: [0.78],
-    17.0: [0.76],
+    5.0: [0.79],
+    8.0: [0.76],
+    11.0: [0.75],
+    14.0: [0.73],
+    17.0: [0.74],
 }
 
-# Preparing the data for plotting
 a_values = list(a_vs_accuracy.keys())
 accuracies = [acc[0] for acc in a_vs_accuracy.values()]
 
-# Updating the plot with increased space between the title and the plot
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(20, 16))
+plt.plot(a_values, accuracies, marker="o", linewidth=6)
 
-# Setting larger fonts for specific elements
-plt.rcParams.update({"font.size": 16})
+plt.xlabel('Hyperparameter "a"', fontsize=62, labelpad=20)
+plt.ylabel("Mean macro accuracy", fontsize=62, labelpad=20)
+plt.title(' ', fontsize=62, pad=50)
 
-plt.plot(a_values, accuracies, marker="o")  # Connect points with a line
-# for a_value, accuracy in zip(a_values, accuracies):
-#     plt.text(a_value, accuracy, f"a={a_value}", fontsize=16, rotation=60)
-
-plt.xlabel('Hyperparameter "a"', fontsize=18)
-plt.ylabel("Mean Validation Accuracy", fontsize=18)
-plt.title(
-    'Hyperparameter "a" vs. Mean Macro Validation Accuracy',
-    fontsize=16,
-    pad=20,
+# Simplify x-axis ticks
+selected_ticks = [0.001, 0.3, 0.6, 0.9, 2, 5, 8, 11, 14, 17]
+plt.gca().set_xticks(selected_ticks[:-3])  # Exclude last three ticks
+plt.gca().set_xticklabels(
+    [f"{a}" for a in selected_ticks][:-3], rotation=45, fontsize=30
 )
-# plt.legend(
-#     ["Mean Validation Accuracy"], loc="upper left", bbox_to_anchor=(1, 1), fontsize=12
-# )
+
+# Annotate specific points
+for a, acc in zip(a_values, accuracies):  # Annotate the last three points
+    plt.annotate(
+        f"{a}",
+        (a, acc),
+        textcoords="offset points",
+        xytext=(0, 10),
+        ha="center",
+        fontsize=48,
+        rotation=40,
+        weight="bold",
+    )
 plt.xscale("log")
-plt.xticks(a_values, [f"{a}" for a in a_values], rotation=80, fontsize=14)
-# plt.gca().xaxis.labelpad = 15  # Increase padding for x-axis label
-# plt.gca().tick_params(axis="x", pad=15)  # Increase padding for x-ticks
+plt.xticks(fontsize=2)
+plt.yticks(fontsize=52)
 
 plt.show()
 # -
@@ -742,22 +779,25 @@ plt.show()
 len(y_pred)
 
 # +
-cm = np.array([[51, 4, 6], [5, 58, 10], [2, 4, 38]])
+cm = np.array([[48, 7, 6], [10, 53, 10], [1, 7, 36]])
 
 # Plot the confusion matrix
-labels = ["Conventional", "Minimum", "No-till/Direct-seed"]
+labels = ["CT", "MT", "NT"]
 # labels = ['MinimumTill', 'NoTill-DirectSeed']
 plt.figure(figsize=(8, 6))
-plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
-plt.title("Predicted vs True Tillage", fontsize = 20)
-plt.colorbar()
+im = plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+# plt.title("Predicted vs True Tillage Type", fontsize=28, pad=20)
+plt.title("                              ", fontsize=28, pad=20)
+# cbar = plt.colorbar(im)
+# cbar.ax.tick_params(labelsize=20)  # Adjust the font size here
+
 
 tick_marks = np.arange(len(labels))
-plt.xticks(tick_marks, labels, fontsize=18, rotation=45)
-plt.yticks(tick_marks, labels, fontsize=18)
+plt.xticks(tick_marks, labels, fontsize=32, rotation=45)
+plt.yticks(tick_marks, labels, fontsize=32)
 
-plt.ylabel("True label", fontsize=18)
-plt.xlabel("Predicted label", fontsize=18)
+plt.ylabel("True label", fontsize=32)
+plt.xlabel("Predicted label", fontsize=32)
 
 # Displaying the values in the cells
 for i in range(cm.shape[0]):
@@ -767,8 +807,9 @@ for i in range(cm.shape[0]):
             i,
             format(cm[i, j], "d"),
             horizontalalignment="center",
+            verticalalignment="center",
             color="white" if cm[i, j] > cm.max() / 2 else "black",
-            fontsize=20
+            fontsize=32,
         )
 
 plt.tight_layout()
