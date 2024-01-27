@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: tillmap
 #     language: python
@@ -69,13 +69,13 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
     
 
 # # Read data
-path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-                "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
+# path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+#                 "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+#                 "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
 
-# path_to_data = ("/home/amnnrz/OneDrive - "
-#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
-#                 "/field_level_data/FINAL_DATA/")
+path_to_data = ("/home/amnnrz/OneDrive - "
+                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
+                "/field_level_data/FINAL_DATA/")
 
 df = pd.read_csv(path_to_data + "season_finalData.csv")
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
@@ -136,11 +136,6 @@ df.loc[df['PriorCropT'] == "Legume"]['ResidueCov'].value_counts()
 
 df__ = df[["Tillage", "ResidueCov", "ResidueType"]]
 df__ = df__.reset_index(drop=True)
-
-
-
-legume = df.loc[df['ResidueType'] == 'legume']
-legume.loc[legume['PriorCropT']]
 
 df__
 
@@ -347,20 +342,20 @@ g.fig.suptitle("Proportion of Tillage Categories by Residue Type and Coverage", 
 plt.show()
 
 # +
-import pandas as pd
+# import pandas as pd
 
-# Assuming you have a pandas DataFrame called 'df'
+# # Assuming you have a pandas DataFrame called 'df'
 
-# Get the column names as a list
-columns = X_train.columns.tolist()
+# # Get the column names as a list
+# columns = X_train.columns.tolist()
 
-# Find the index of the first column that starts with "VH_"
-first_column_index = next((i for i, col in enumerate(columns) if col.startswith('VH_')), None)
+# # Find the index of the first column that starts with "VH_"
+# first_column_index = next((i for i, col in enumerate(columns) if col.startswith('VH_')), None)
 
-# 'first_column_index' will be the index of the first column starting with 'VH_'
-# If no such column is found, it will be None
+# # 'first_column_index' will be the index of the first column starting with 'VH_'
+# # If no such column is found, it will be None
 
-print(first_column_index)
+# print(first_column_index)
 # -
 
 
@@ -373,9 +368,160 @@ important_features = ['ResidueType', 'ResidueCov', 'sti_S0', 'ndi7_S0', 'crc_S0'
        'elevation_idm', 'ndi7_S2', 'B_S2', 'evi_S1', 'sti_S2', 'sndvi_S1',
        'ndti_S2', 'ndti_S3', 'aspect_idm', 'B_S3', 'gcvi_S1_asm', 'SWIR1_S0',
        'slope_ent']
-important_features
 
+# # Cross-validation of Residue Cover Percentage (RCP) classifier
 
+# +
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
+from sklearn.metrics import confusion_matrix, accuracy_score
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# from imblearn.over_sampling import RandomOverSampler
+from collections import Counter
+from sklearn.preprocessing import LabelEncoder
+from collections import OrderedDict
+
+# Encode "ResidueType"
+df_ = df
+encode_dict_Restype = {"grain": 1, "legume": 2, "canola": 3}
+df_["ResidueType"] = df_["ResidueType"].replace(encode_dict_Restype)
+
+# Encode "ResidueCov"
+encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
+df_["ResidueCov"] = df_["ResidueCov"].replace(encode_dict_ResCov)
+
+rcp_datasetd
+rcp_dataset = pd.concat(
+    [rcp_dataset.loc[:, ["ResidueType"]], rcp_dataset.loc[:, "B_S0":]], axis=1
+)
+
+dataset = rcp_dataset
+
+# Remove NA
+dataset = dataset.dropna(subset=["ResidueCov", "ResidueType"])
+
+# Split features and target variable
+# X = dataset.iloc[:, [2, 4] + list(np.arange(7, dataset.shape[1]))]
+X = dataset.drop(columns="ResidueCov")
+
+# y = dataset["Tillage"]
+y = dataset["ResidueCov"]
+
+# Impute missing values with the median
+X = X.fillna(X.median())
+
+param_grid = {
+    "n_estimators": [50, 100, 300],
+    # 'n_estimators': [30],
+    "max_depth": [5, 40, 55],
+    # 'a': list(np.arange(-10, 10, 0.5))
+    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3)))),
+}
+
+# Perform cross-validation for 50 times and calculate accuracies
+mean_accuracies = []
+best_model = None
+best_val_accuracy = 0
+feature_counter = Counter()  # Counter to keep track of feature occurrences
+
+# Initialize a list to store mean test scores for each hyperparameter combination
+mean_test_scores = []
+
+# initialize a list to store mean validation accuracies for each value of "a"
+a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
+a_cm = []
+for _ in range(5):
+    # Split the data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+    if _ == 4:  # After the first three loops
+        top_50_features = [feature[0] for feature in feature_counter.most_common(50)]
+        selected_features = top_50_features
+        # Adjust training and test sets to include only these 50 features
+        selected_features = ["ResidueType"] + list(
+            X_train.iloc[:, np.array(top_50_features)].columns
+        )
+        selected_features
+        list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
+
+        # X_train_selected = X_train[list_without_duplicates]
+        # X_test_selected = X_test[list_without_duplicates]
+
+        X_train_selected = X_train[important_features]
+        X_test_selected = X_test[important_features]
+
+    grid_search = GridSearchCV(
+        CustomWeightedRF(), param_grid, cv=3, return_train_score=False
+    )
+    grid_search.fit(X_train, y_train)
+
+    print(grid_search.cv_results_["mean_test_score"].shape)
+
+    # Update the a_vs_accuracy dictionary with the mean validation accuracies
+    # for each value of "a"
+    for i, a_value in enumerate(param_grid["a"]):
+        a_vs_accuracy[a_value].append(
+            grid_search.cv_results_["mean_test_score"][i :: len(param_grid["a"])].mean()
+        )
+
+        current_model = grid_search.best_estimator_
+        y_pred = current_model.predict(X_test)
+        a_cm += [confusion_matrix(y_test, y_pred)]
+
+    # Store mean test scores in the list
+    mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
+
+    # Get the best model and its predictions
+    current_model = grid_search.best_estimator_
+    y_pred = current_model.predict(X_test)  # Use the test data for prediction
+
+    def macro_accuracy(y_true, y_pred):
+        # Compute the confusion matrix
+        conf_matrix = confusion_matrix(y_true, y_pred)
+
+        # Calculate accuracy for each class
+        class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
+
+        # Compute the macro-averaged accuracy
+        macro_avg_accuracy = np.nanmean(class_accuracies)
+
+        return macro_avg_accuracy
+
+    # Calculate the accuracy for the current run
+    val_accuracy = macro_accuracy(y_test, y_pred)
+    print(_, ":", "Validation Accuracy is ", val_accuracy)
+    mean_accuracies.append(val_accuracy)
+
+    # Update the best model if the current model has a higher validation accuracy
+    if val_accuracy > best_val_accuracy:
+        best_model = current_model
+        best_val_accuracy = val_accuracy
+
+    # Update the feature counter with the top 50 important features of the current model
+    top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
+    top_50_features = X.columns[top_50_indices]
+    feature_counter.update(top_50_indices)
+
+# Calculate mean accuracy across the 20 runs
+mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
+
+# Print accuracies for all cross-validations
+print("Accuracies for all cross-validations:")
+for i, accuracy in enumerate(mean_accuracies, 1):
+    print(f"Cross-Validation {i}: {accuracy:.4f}")
+
+# Print mean accuracy
+print(f"Mean Accuracy: {mean_accuracy:.4f}")
+
+# print hyperparameters of the best model
+print("Best hyperparameters for the model:", grid_search.best_params_)
+# -
+
+# # Cross-validation of tillage classifier
 
 # +
 import numpy as np
@@ -400,7 +546,7 @@ df_encoded["ResidueType"] = df_encoded["ResidueType"].replace(encode_dict_Restyp
 encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
 df_encoded["ResidueCov"] = df_encoded["ResidueCov"].replace(encode_dict_ResCov)
 
-# Remove NA from Tillage
+# Remove NA 
 df_encoded = df_encoded.dropna(subset=["Tillage", "ResidueCov", "ResidueType"])
 
 # Split features and target variable
@@ -706,11 +852,6 @@ plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
 # Moved the legend to the right
 plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.show()
-# -
-
-X_train_selected
-
-X_train_selected.columns
 
 # +
 from joblib import dump
