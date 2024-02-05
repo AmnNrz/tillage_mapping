@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -1110,9 +1110,14 @@ def check_task_status(tasks):
 # their Gray-level Co-occurence Metrics (GLCMs)
 # import USGS Landsat 8 Level 2, Collection 2, Tier 1
 
+# path_to_large_shapefiles = (
+#     "/Users/aminnorouzi/Library/CloudStorage/"
+#     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
+#     "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
+#     "mapping_data/2012/"
+# )
 path_to_large_shapefiles = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
+    "/home/amnnrz/OneDrive - a.norouzikandelati/"
     "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
     "mapping_data/2017/"
 )
@@ -1365,8 +1370,6 @@ geopandas_list
 
 df = pd.concat([_[0] for _ in df_seasonBased_list_2012])
 df.to_csv(path_to_large_shapefiles + f"seasonBased_all.csv")
-
-Landsat_seasonBased_list[0]
 
 # + [markdown] id="DUhdHR8xIrUE"
 # # Download Metric-Based Landsat Data for training 

@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: tillmap
 #     language: python
@@ -16,15 +16,19 @@
 import geopandas as gpd
 import pandas as pd
 
-# +
+# path_to_data = (
+#     "/Users/aminnorouzi/Library/CloudStorage/"
+#     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+#     "Projects/Tillage_Mapping/Data/GIS_Data/check_for_acres/"
+# )
 path_to_data = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "/home/amnnrz/OneDrive - a.norouzikandelati/Ph.D/"
     "Projects/Tillage_Mapping/Data/GIS_Data/check_for_acres/"
 )
-
 gpd_2012 = gpd.read_file(path_to_data + "WSDA_2012_reprojected_dryland_WA.shp")
 gpd_2017 = gpd.read_file(path_to_data + "WSDA_2017_reprojected_dryland_WA.shp")
+
+gpd_2012
 
 # +
 eastern_counties = ['Whitman', 'Columbia', 'Adams', 'Garfield', 'Asotin',
