@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.15.1
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -1126,11 +1126,16 @@ def check_task_status(tasks):
 # their Gray-level Co-occurence Metrics (GLCMs)
 # import USGS Landsat 8 Level 2, Collection 2, Tier 1
 
+# path_to_large_shapefiles = (
+#     "/Users/aminnorouzi/Library/CloudStorage/"
+#     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
+#     "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
+#     "mapping_data/2012/"
+# )
 path_to_large_shapefiles = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
+    "/home/amnnrz/OneDrive - a.norouzikandelati/"
     "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
-    "mapping_data/2012/"
+    "mapping_data/2017/"
 )
 
 path_to_batches = path_to_large_shapefiles + "batches"
@@ -1152,14 +1157,11 @@ for shp_name in sorted_file_list:
     pointID_start += shapefile_gdf.shape[0]
     geopandas_list.append(shapefile_gdf)
 
-gpd_list = []
-for df in geopandas_list:
-    df = df.drop(columns=["Organic"])
-    gpd_list.append(df)
-geopandas_list = [geemap.geopandas_to_ee(i) for i in gpd_list]
 
-startYear = 2012
-endYear = 2013
+geopandas_list = [geemap.geopandas_to_ee(i) for i in geopandas_list]
+
+startYear = 2017
+endYear = 2018
 
 L8T1 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
 L7T1 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2")
@@ -1226,8 +1228,8 @@ landSat_7_8 = (
 
 # Create season-based composites
 # Specify time period
-startYear = 2012
-endYear = 2013
+startYear = 2017
+endYear = 2018
 years = list(range(startYear, endYear))
 
 # Create season-based composites for each year and put them in a list
@@ -1378,8 +1380,6 @@ for idx, shp_batch in enumerate(shpfilesList_):
 
 df = pd.concat([_[0] for _ in df_seasonBased_list_2012])
 df.to_csv(path_to_large_shapefiles + f"seasonBased_all.csv")
-
-Landsat_seasonBased_list[0]
 
 # + [markdown] id="DUhdHR8xIrUE"
 # # Download Metric-Based Landsat Data for training 
