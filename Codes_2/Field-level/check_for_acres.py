@@ -25,14 +25,11 @@ path_to_data = (
 
 gpd_2012 = gpd.read_file(path_to_data + "WSDA_2012_reprojected_dryland_WA.shp")
 gpd_2017 = gpd.read_file(path_to_data + "WSDA_2017_reprojected_dryland_WA.shp")
-# -
-
-gpd_2012
 
 # +
-# eastern_counties = ['Whitman', 'Columbia', 'Adams', 'Garfield', 'Asotin',
-#                     'Lincoln', 'Douglas', 'Grant', 'Benton', 'Franklin', 'Spokane']
-eastern_counties = ['Whitman', 'Columbia']
+eastern_counties = ['Whitman', 'Columbia', 'Adams', 'Garfield', 'Asotin',
+                    'Lincoln', 'Douglas', 'Grant', 'Benton', 'Franklin', 'Spokane']
+# eastern_counties = ['Whitman', 'Columbia']
 
 gpd_2017_ = gpd_2017.loc[gpd_2017['County'].isin(eastern_counties)]
 gpd_2017_['CropType'].unique()

@@ -832,41 +832,6 @@ def geopandas_to_ee(df):
     return feature_collection
 
 
-# +
-# Split shapefile into shapefiles with smaller numbers of polygons
-import os
-import geopandas as gpd
-from math import ceil
-
-path_to_large_shapefiles = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
-    "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
-    "mapping_data/"
-)
-
-path_to_batches = path_to_large_shapefiles + "2012/batches"
-
-
-def split_shapefile(input_shapefile, output_directory, max_features_per_file):
-    # Read the original shapefile
-    gdf = gpd.read_file(input_shapefile)
-    total_features = len(gdf)
-    number_of_splits = ceil(total_features / max_features_per_file)
-
-    # Split and save shapefiles
-    for i in range(number_of_splits):
-        start = i * max_features_per_file
-        end = start + max_features_per_file
-        split_gdf = gdf.iloc[start:end]
-        split_filename = os.path.join(output_directory, f"split_{i}.shp")
-        split_gdf.to_file(split_filename)
-
-    print(f"Shapefile split into {number_of_splits} parts.")
-
-
-shpfile_2022_path = path_to_large_shapefiles + "2012/2012shpfile.shp"
-split_shapefile(shpfile_2022_path, path_to_batches, 500)
 # -
 
 # #### Imports
@@ -908,24 +873,38 @@ endYear = 2012
 # +
 path_to_data = (
     "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/Data/GIS_Data/check_for_acres/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
+    "Tillage_Mapping/Data/GIS_Data/2017_2017_wsda"
 )
 
-gpd_2012 = gpd.read_file(path_to_data + "WSDA_2012_reprojected_dryland_WA.shp")
-gpd_2017 = gpd.read_file(path_to_data + "WSDA_2017_reprojected_dryland_WA.shp")
+gpd_2012 = gpd.read_file(path_to_data + "WSDA_2012.shp")
+gpd_2017 = gpd.read_file(path_to_data + "WSDA_2017.shp")
 
-eastern_counties = ['Whitman', 'Columbia', 'Adams', 'Garfield', 'Asotin',
-                    'Lincoln', 'Douglas', 'Grant', 'Benton', 'Franklin', 'Spokane']
-gpd_df_ = gpd_2012.loc[gpd_2012['County'].isin(eastern_counties)]
-gpd_df_['CropType'].unique()
+eastern_counties = [
+    "Whitman",
+    "Columbia",
+    "Adams",
+    "Garfield",
+    "Asotin",
+    "Lincoln",
+    "Douglas",
+    "Grant",
+    "Benton",
+    "Franklin",
+    "Spokane",
+    "Wallawala"
+]
+gpd_df_2017 = gpd_2017.loc[gpd_2017["County"].isin(eastern_counties)]
+gpd_df_2017["CropType"].unique()
+gpd_df_2012 = gpd_2012.loc[gpd_2012["County"].isin(eastern_counties)]
+gpd_df_2012["CropType"].unique()
 
 # selected_crops = ['Wheat', 'Wheat Fallow',
 #        'Fallow, Idle', 'Fallow', 'Grass Hay',
 #        'Pea, Green', 'Wildlife Feed', 'Alfalfa Hay', 'Corn, Field', 'Nursery, Ornamental',
 #        'Alfalfa/Grass Hay', 'Rye', 'Fallow, Tilled', 'Barley', 'Chickpea', 'Pea, Dry',
 #        'Barley Hay', 'Canola', 'Potato', 'Timothy',
-#        'Corn Seed', 'Triticale', 'Bean, Dry', 'Sugar Beet Seed', 
+#        'Corn Seed', 'Triticale', 'Bean, Dry', 'Sugar Beet Seed',
 #        'Bluegrass Seed', 'Oat', 'Pea Seed',
 #        'Corn, Sweet', 'Sunflower', 'Oat Hay',
 #        'Leek', 'Market Crops', 'Onion', 'Sorghum', 'Buckwheat',
@@ -933,27 +912,34 @@ gpd_df_['CropType'].unique()
 #        'Grass Seed, Other', 'Sudangrass', 'Cereal Grain, Unknown',
 #        'Sunflower Seed', 'Legume Cover',
 #        'Bromegrass Seed']
-selected_crops = ['Wheat', 'Wheat Fallow', 'Pea, Green', 'Rye', 'Barley',
-                    'Chickpea', 'Pea, Dry', 'Barley Hay', 'Canola',
-                      'Triticale', 'Bean, Dry', 'Oat', 'Pea Seed', 'Oat Hay',
-                        'Sorghum', 'Buckwheat', 'Lentil', 'Triticale Hay',
-                        'Cereal Grain, Unknown', 'Legume Cover'
-       ]
+selected_crops = [
+    "Wheat",
+    "Wheat Fallow",
+    "Pea, Green",
+    "Rye",
+    "Barley",
+    "Chickpea",
+    "Pea, Dry",
+    "Barley Hay",
+    "Canola",
+    "Triticale",
+    "Bean, Dry",
+    "Oat",
+    "Pea Seed",
+    "Oat Hay",
+    "Sorghum",
+    "Buckwheat",
+    "Lentil",
+    "Triticale Hay",
+    "Cereal Grain, Unknown",
+    "Legume Cover",
+]
 
-gpd_df_filtered = gpd_df_.loc[gpd_df_['CropType'].isin(selected_crops)]
+gpd_df_2017_filtered = gpd_df_2017.loc[gpd_df_2017["CropType"].isin(selected_crops)]
+gpd_df_2012_filtered = gpd_df_2012.loc[gpd_df_2012["CropType"].isin(selected_crops)]
 gpd_df_filtered.groupby(["County"])["ExactAcres"].sum()
 
-gpd_df_filtered
-# -
-
-path_to_save = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/Data/field_level_data/mapping_data/"
-)
-gpd_df_filtered.to_file(path_to_save + "2012/2012shpfile.shp")
-
-# # Download CDL data
+gpd_df_filtered = gpd_df_2017_filtered
 
 # +
 # Split shapefile into shapefiles with smaller numbers of polygons
@@ -968,7 +954,7 @@ path_to_large_shapefiles = (
     "mapping_data/"
 )
 
-path_to_batches = path_to_large_shapefiles + "2012/batches"
+path_to_batches = path_to_large_shapefiles + "2017/batches"
 
 
 def split_shapefile(input_shapefile, output_directory, max_features_per_file):
@@ -988,13 +974,11 @@ def split_shapefile(input_shapefile, output_directory, max_features_per_file):
     print(f"Shapefile split into {number_of_splits} parts.")
 
 
-shpfile_2022_path = path_to_large_shapefiles + "2012/2012shpfile.shp"
+shpfile_2022_path = path_to_large_shapefiles + "2017/2017shpfile.shp"
 split_shapefile(shpfile_2022_path, path_to_batches, 500)
 # -
 
-path_to_batches = path_to_large_shapefiles + "2012/batches/"
-dff = gpd.read_file(path_to_batches + "split_0.shp")
-dff
+# # Download CDL data
 
 # +
 # Load the USDA NASS CDL dataset
@@ -1063,7 +1047,7 @@ import numpy as np
 import cProfile
 import pstats
 
-year = 2011
+year = 2016
 
 # Assuming the split_shapefile function has already been run
 split_shapefiles = [f for f in os.listdir(path_to_batches) if f.endswith(".shp")]
@@ -1094,7 +1078,7 @@ sorted_file_list = sorted(
 
 tasks = []
 for year in np.arange(startYear, endYear):
-    for shapefile_name in sorted_file_list[36:]:
+    for shapefile_name in sorted_file_list[18:]:
         print(shapefile_name)
         task = submit_batch_task(shapefile_name, year)
         tasks.append(task)
@@ -1130,7 +1114,7 @@ path_to_large_shapefiles = (
     "/Users/aminnorouzi/Library/CloudStorage/"
     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
     "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
-    "mapping_data/2012/"
+    "mapping_data/2017/"
 )
 
 path_to_batches = path_to_large_shapefiles + "batches"
@@ -1152,14 +1136,14 @@ for shp_name in sorted_file_list:
     pointID_start += shapefile_gdf.shape[0]
     geopandas_list.append(shapefile_gdf)
 
-gpd_list = []
-for df in geopandas_list:
-    df = df.drop(columns=["Organic"])
-    gpd_list.append(df)
-geopandas_list = [geemap.geopandas_to_ee(i) for i in gpd_list]
+# gpd_list = []
+# for df in geopandas_list:
+#     df = df.drop(columns=["Organic"])
+#     gpd_list.append(df)
+geopandas_list = [geemap.geopandas_to_ee(i) for i in geopandas_list]
 
-startYear = 2012
-endYear = 2013
+startYear = 2017
+endYear = 2018
 
 L8T1 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
 L7T1 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2")
@@ -1226,8 +1210,7 @@ landSat_7_8 = (
 
 # Create season-based composites
 # Specify time period
-startYear = 2012
-endYear = 2013
+
 years = list(range(startYear, endYear))
 
 # Create season-based composites for each year and put them in a list
@@ -1375,6 +1358,10 @@ for idx, shp_batch in enumerate(shpfilesList_):
     # )).get(1)), {'bands': ['B4_S1', 'B3_S1', 'B2_S1'], max: 0.5, 'gamma': 2}, 'L8')
     # Map
 # -
+
+sorted_file_list
+
+geopandas_list
 
 df = pd.concat([_[0] for _ in df_seasonBased_list_2012])
 df.to_csv(path_to_large_shapefiles + f"seasonBased_all.csv")

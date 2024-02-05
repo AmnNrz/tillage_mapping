@@ -84,10 +84,13 @@ path_to_data = (
     "Projects/Tillage_Mapping/Data/field_level_data/"
 )
 
-test_df2017 = pd.read_csv(path_to_data + "mapping_data/2017/df_2017_test.csv")
+test_df2017 = pd.read_csv(path_to_data + "mapping_data/2017/seasonBased_all.csv")
 
 best_Tillage_estimator = load(path_to_model + "best_Tillage_estimator.joblib")
 best_RC_estimator = load(path_to_model + "best_RC_estimator.joblib")
+# -
+
+print(test_df2017.columns
 
 # +
 important_features = ['pointID', 'ResidueType', 'sti_S0', 'ndi7_S0', 'crc_S0', 'ndti_S0', 'R_S2',
