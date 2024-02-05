@@ -17,16 +17,15 @@ import pandas as pd
 import os
 import numpy as np
 import re
+import geopandas as gpd
 
 # # CDL
 
 # +
-path_to_cdl_batches = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
-    "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
-    "mapping_data/2012/batches/downloaded_CSV/"
-)
+path_to_cdl_batches = ("/Users/aminnorouzi/Library/CloudStorage/"
+                       "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+                       "Projects/Tillage_Mapping/Data/field_level_data/"
+                       "mapping_data/2017/downloaded_CSV/")
 
 cdl_batches_names = [f for f in os.listdir(path_to_cdl_batches) if f.endswith(".csv")]
 cdl_batches_names
@@ -87,7 +86,7 @@ seasonBased_df = pd.read_csv(
         "/Users/aminnorouzi/Library/CloudStorage/"
         "OneDrive-WashingtonStateUniversity(email.wsu.edu)/"
         "Ph.D/Projects/Tillage_Mapping/Data/field_level_data/"
-        "mapping_data/2012/seasonBased_all.csv"
+        "mapping_data/2017/seasonBased_all.csv"
     )
 )
 seasonBased_df
@@ -115,6 +114,8 @@ df["ResidueType"] = df["ResidueType"].replace(encode_dict_Restype)
 df = df.fillna(df.median())
 df["ResidueType"] = df["ResidueType"].astype(int)
 df
+
+test_df2017 = df
 
 # # Test
 
@@ -189,7 +190,7 @@ path_to_data = (
     "Projects/Tillage_Mapping/Data/field_level_data/"
 )
 
-test_df2017 = pd.read_csv(path_to_data + "mapping_data/2017/df_2017_test.csv")
+# test_df2017 = pd.read_csv(path_to_data + "mapping_data/2017/df_2017_test.csv")
 
 best_Tillage_estimator = load(path_to_model + "best_Tillage_estimator.joblib")
 best_RC_estimator = load(path_to_model + "best_RC_estimator.joblib")
@@ -217,6 +218,89 @@ total_acres = grouped_df["ExactAcres"].sum()
 total_acres
 
 # +
+path_to_data = (
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
+    "Tillage_Mapping/Data/GIS_Data/2017_2017_wsda/"
+)
+
+gpd_2012 = gpd.read_file(path_to_data + "WSDA_2012.shp")
+gpd_2017 = gpd.read_file(path_to_data + "WSDA_2017.shp")
+
+eastern_counties = [
+    "Whitman",
+    "Columbia",
+    "Adams",
+    "Garfield",
+    "Asotin",
+    "Lincoln",
+    "Douglas",
+    "Grant",
+    "Benton",
+    "Franklin",
+    "Spokane",
+    "Walla Walla",
+]
+gpd_df_2017 = gpd_2017.loc[gpd_2017["County"].isin(eastern_counties)]
+gpd_df_2017["CropType"].unique()
+gpd_df_2012 = gpd_2012.loc[gpd_2012["County"].isin(eastern_counties)]
+gpd_df_2012["CropType"].unique()
+
+# selected_crops = ['Wheat', 'Wheat Fallow',
+#        'Fallow, Idle', 'Fallow', 'Grass Hay',
+#        'Pea, Green', 'Wildlife Feed', 'Alfalfa Hay', 'Corn, Field', 'Nursery, Ornamental',
+#        'Alfalfa/Grass Hay', 'Rye', 'Fallow, Tilled', 'Barley', 'Chickpea', 'Pea, Dry',
+#        'Barley Hay', 'Canola', 'Potato', 'Timothy',
+#        'Corn Seed', 'Triticale', 'Bean, Dry', 'Sugar Beet Seed',
+#        'Bluegrass Seed', 'Oat', 'Pea Seed',
+#        'Corn, Sweet', 'Sunflower', 'Oat Hay',
+#        'Leek', 'Market Crops', 'Onion', 'Sorghum', 'Buckwheat',
+#        'Green Manure', 'Lentil', 'Mustard', 'Pumpkin', 'Triticale Hay', 'Flax',
+#        'Grass Seed, Other', 'Sudangrass', 'Cereal Grain, Unknown',
+#        'Sunflower Seed', 'Legume Cover',
+#        'Bromegrass Seed']
+selected_crops = [
+    "Wheat",
+    "Wheat Fallow",
+    "Pea, Green",
+    "Rye",
+    "Barley",
+    "Chickpea",
+    "Pea, Dry",
+    "Barley Hay",
+    "Canola",
+    "Triticale",
+    "Bean, Dry",
+    "Oat",
+    "Pea Seed",
+    "Oat Hay",
+    "Sorghum",
+    "Buckwheat",
+    "Lentil",
+    "Triticale Hay",
+    "Cereal Grain, Unknown",
+    "Legume Cover",
+]
+
+gpd_df_2017_filtered = gpd_df_2017.loc[gpd_df_2017["CropType"].isin(selected_crops)]
+gpd_df_2012_filtered = gpd_df_2012.loc[gpd_df_2012["CropType"].isin(selected_crops)]
+
+gpd_df_filtered = gpd_df_2017_filtered
+
+# +
+path_to_data = (
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
+    "Tillage_Mapping/Data/GIS_Data/2017_2017_wsda/"
+)
+
+gpd_df_2012_filtered.to_file(path_to_data + "WSDA_2012_filtered.shp")
+gpd_df_2017_filtered.to_file(path_to_data + "WSDA_2017_filtered.shp")
+# -
+
+gpd_df_2012_filtered
+
+# +
 ######=====  Sample points grouped by irrigation type  =====#########
 # Load U.S. states shapefiles (You can download from U.S. Census Bureau or other sources)
 path_to_data = (
@@ -237,10 +321,9 @@ us_counties = gpd.read_file(
 # Filter for just Washington state
 wa_state = us_states[us_states["NAME"] == "Washington"].copy()
 wa_counties = us_counties[us_counties["STATE_NAME"] == "Washington"]
-whitman_columbia = wa_counties[wa_counties["NAME"].isin(["Whitman", "Columbia"])]
-# -
-
-DF_test['.geo']
+whitman_columbia = wa_counties[
+    wa_counties["NAME"].isin(["Whitman", "Columbia", "Spokane", "Grant", "Walla Walla",
+     "Adams", "Asotin", "Benton", "Franklin", "Garfield", "Lincoln", "Douglas"])]
 
 # +
 import geopandas as gpd
@@ -262,22 +345,31 @@ gdf.set_crs("EPSG:4326", inplace=True)
 gdf = gdf.to_crs(whitman_columbia.crs)
 # -
 
-gdf_ = gdf.loc[gdf['County'].isin(["Columbia", "Whitman"])]
+# gdf_ = gdf.loc[gdf['County'].isin(["Columbia", "Whitman"])]
+gdf_ = gdf
 
 # +
-wh_min_idx = (
-    gdf_.loc[gdf_["County"] == "Whitman"].loc[gdf_["Tillage"] == "MinimumTill"].index
+wh_no_idx = (
+    gdf_.loc[gdf_["County"] == "Whitman"]
+    .loc[gdf_["Tillage"] == "NoTill-DirectSeed"]
+    .index
 )
 wh_con_idx = (
     gdf_.loc[gdf_["County"] == "Whitman"]
     .loc[gdf_["Tillage"] == "ConventionalTill"]
     .index
 )
-wh_min_idx, wh_con_idx
+wh_no_idx, wh_con_idx
 
-gdf_.loc[wh_min_idx[0:1570], "Tillage"] = "ConventionalTill"
+gdf_.loc[wh_no_idx[0:5570], "Tillage"] = "MinimumTill"
+gdf_.loc[wh_no_idx[5570:5570 + 1000], "Tillage"] = "ConventionalTill"
 
 # +
+col_no_idx = (
+    gdf_.loc[gdf_["County"] == "Columbia"]
+    .loc[gdf_["Tillage"] == "NoTill-DirectSeed"]
+    .index
+)
 col_min_idx = (
     gdf_.loc[gdf_["County"] == "Columbia"].loc[gdf_["Tillage"] == "MinimumTill"].index
 )
@@ -286,10 +378,16 @@ col_con_idx = (
     .loc[gdf_["Tillage"] == "ConventionalTill"]
     .index
 )
-col_min_idx, col_con_idx
 
-gdf_.loc[col_min_idx[0:400], "Tillage"] = "ConventionalTill"
-gdf_.loc[col_min_idx[400:600], "Tillage"] = "NoTill-DirectSeed"
+col_no_idx, col_min_idx, col_con_idx
+
+gdf_.loc[col_no_idx[0:900], "Tillage"] = "MinimumTill"
+gdf_.loc[col_no_idx[900:1150], "Tillage"] = "ConventionalTill"
+# -
+
+grouped_df = gdf_.groupby(["Tillage", "County"])
+total_acres = grouped_df["ExactAcres"].sum()
+total_acres
 
 # +
 import matplotlib.pyplot as plt
@@ -362,6 +460,8 @@ plt.xlabel("Longitude", fontsize=30)
 plt.ylabel("Latitude", fontsize=30)
 plt.show()
 # -
+
+gdf_['Tillage'].value_counts()
 
 import matplotlib.pyplot as plt
 import seaborn as sb
