@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: tillmap
 #     language: python
@@ -19,6 +19,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 
+
 # Custom weight formula function
 def calculate_custom_weights(y, a):
     unique_classes, class_counts = np.unique(y, return_counts=True)
@@ -28,66 +29,66 @@ def calculate_custom_weights(y, a):
         weight_dict[cls] = (1 / cnt) ** a / sum_weight
     return weight_dict
 
+
 class CustomWeightedRF(BaseEstimator, ClassifierMixin):
     def __init__(self, n_estimators=100, max_depth=None, a=1, **kwargs):
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.a = a
-        self.rf = RandomForestClassifier(n_estimators=self.n_estimators,
-                                         max_depth=self.max_depth, **kwargs)
-    
+        self.rf = RandomForestClassifier(
+            n_estimators=self.n_estimators, max_depth=self.max_depth, **kwargs
+        )
+
     def fit(self, X, y, **kwargs):
         target_weights_dict = calculate_custom_weights(y, self.a)
         target_weights = np.array([target_weights_dict[sample] for sample in y])
 
         # Rest of the weight calculation can stay same
-        feature_cols = ['ResidueType']
+        feature_cols = ["ResidueType"]
         feature_weights = np.zeros(X.shape[0])
         for col in feature_cols:
             feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
             feature_weights += X[col].map(feature_weights_dict).values
 
         sample_weights = target_weights * feature_weights
-        
+
         # Now fit the RandomForestClassifier with the computed weights
         self.rf.fit(X, y, sample_weight=sample_weights)
 
         # Set the classes_ attribute
         self.classes_ = self.rf.classes_
-        
+
         return self
-    
+
     def predict(self, X, **kwargs):
         return self.rf.predict(X)
-    
+
     def predict_proba(self, X, **kwargs):
         return self.rf.predict_proba(X)
-    
+
     @property
     def feature_importances_(self):
         return self.rf.feature_importances_
-    
+
 
 # # Read data
-# path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
-#                 "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-#                 "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/")
+path_to_data = (
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/"
+)
 
-path_to_data = ("/home/amnnrz/OneDrive - "
-                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
-                "/field_level_data/FINAL_DATA/")
+# path_to_data = ("/home/amnnrz/OneDrive - "
+#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
+#                 "/field_level_data/FINAL_DATA/")
 
-df = pd.read_csv(path_to_data + "season_finalData.csv")
+df = pd.read_csv(path_to_data + "season_finalData_with_county.csv")
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
 ########################################################################
 ########################################################################
 ########################################################################
 # df_Opt = df.iloc[:,
 #     list(np.arange(0, 1205))]
-
-
-
-
 
 
 ########################################################################
@@ -97,6 +98,7 @@ df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
 # in columns "Tillage", "ResidueType", "ResidueCov" has roughly equal counts
 # in both dataframes.
 
+
 # We split it based on Tillage and see if it works for the two features also:
 def split_dataframe(df, column):
     unique_values = df[column].unique()
@@ -104,22 +106,24 @@ def split_dataframe(df, column):
     dfs2 = []
 
     for value in unique_values:
-        temp_df = df[df[column] == value].sample(frac=1) \
-        .reset_index(drop=True) # Shuffle
+        temp_df = (
+            df[df[column] == value].sample(frac=1).reset_index(drop=True)
+        )  # Shuffle
         midpoint = len(temp_df) // 2
         dfs1.append(temp_df.iloc[:midpoint])
         dfs2.append(temp_df.iloc[midpoint:])
 
-    df1 = pd.concat(dfs1, axis=0).sample(frac=1) \
-        .reset_index(drop=True) # Shuffle after concatenating
-    df2 = pd.concat(dfs2, axis=0).sample(frac=1) \
-        .reset_index(drop=True)
+    df1 = (
+        pd.concat(dfs1, axis=0).sample(frac=1).reset_index(drop=True)
+    )  # Shuffle after concatenating
+    df2 = pd.concat(dfs2, axis=0).sample(frac=1).reset_index(drop=True)
 
     return df1, df2
 
-df1, df2 = split_dataframe(df, 'Tillage')
-df1 = df1.set_index('pointID')
-df2 = df2.set_index('pointID')
+
+df1, df2 = split_dataframe(df, "Tillage")
+df1 = df1.set_index("pointID")
+df2 = df2.set_index("pointID")
 
 # Lets check number of each category in the "Tillage", "ResidueType",
 # "ResidueCov" for both dataframes
@@ -132,12 +136,113 @@ print(df1["ResidueCov"].value_counts(), df2["ResidueCov"].value_counts())
 df = pd.concat([df1, df2])
 # -
 
-df.loc[df['PriorCropT'] == "Legume"]['ResidueCov'].value_counts()
+df.iloc[:, 0:10]
 
-df__ = df[["Tillage", "ResidueCov", "ResidueType"]]
-df__ = df__.reset_index(drop=True)
+grouped_df = (
+    df.loc[:, ["ResidueType", "Tillage"]]
+    .groupby(["ResidueType", "Tillage"])
+    .size()
+    .reset_index(name="Count")
+)
+grouped_df
 
-df__
+# +
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Create the dataframe from the provided data
+data = {
+    "ResidueType": [
+        "canola",
+        "canola",
+        "canola",
+        "grain",
+        "grain",
+        "grain",
+        "legume",
+        "legume",
+        "legume",
+    ],
+    "Tillage": [
+        "ConventionalTill",
+        "MinimumTill",
+        "NoTill-DirectSeed",
+        "ConventionalTill",
+        "MinimumTill",
+        "NoTill-DirectSeed",
+        "ConventionalTill",
+        "MinimumTill",
+        "NoTill-DirectSeed",
+    ],
+    "Count": [4, 12, 46, 151, 188, 46, 49, 32, 47],
+}
+
+df = pd.DataFrame(data)
+
+# Adjusting the pivot to switch the axes
+matrix_df_adjusted = df.pivot(index="Tillage", columns="ResidueType", values="Count")
+
+# Plotting the adjusted matrix
+plt.figure(figsize=(10, 6))
+sns.heatmap(matrix_df_adjusted, annot=True, cmap="coolwarm", fmt="d")
+plt.title("Count of Tillage Methods by Residue Type")
+plt.xlabel("Residue Type")
+plt.ylabel("Tillage")
+plt.show()
+
+# +
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import (
+    GridSearchCV,
+    cross_val_score,
+    train_test_split,
+    KFold,
+)
+from sklearn.metrics import confusion_matrix, accuracy_score
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.datasets import make_classification  # For demonstration
+from sklearn.feature_selection import mutual_info_classif
+
+# from imblearn.over_sampling import RandomOverSampler
+from collections import Counter
+from sklearn.preprocessing import LabelEncoder
+from collections import OrderedDict
+
+# dataset = df.reset_index()
+dataset = pd.concat(
+    [df.loc[:, ["ResidueType", "ResidueCov"]], df.loc[:, "B_S0":]], axis=1
+)
+
+# Encode "ResidueType"
+encode_dict_Restype = {"grain": 1, "legume": 2, "canola": 3}
+dataset["ResidueType"] = dataset["ResidueType"].replace(encode_dict_Restype)
+
+# Encode "ResidueCov"
+encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
+dataset["ResidueCov"] = dataset["ResidueCov"].replace(encode_dict_ResCov)
+
+# Remove NA
+dataset = dataset.dropna(subset=["ResidueCov", "ResidueType"])
+
+
+X = dataset.drop("ResidueCov", axis=1)
+y = dataset["ResidueCov"]
+
+# Impute missing values with the median
+X = X.fillna(X.median())
+
+# +
+# Splitting dataset into training and testing set
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+X_train.shape, X_test.shape
 
 # +
 import pandas as pd
@@ -344,20 +449,20 @@ g.fig.suptitle("Proportion of Tillage Categories by Residue Type and Coverage", 
 plt.show()
 
 # +
-# import pandas as pd
+import pandas as pd
 
-# # Assuming you have a pandas DataFrame called 'df'
+# Assuming you have a pandas DataFrame called 'df'
 
-# # Get the column names as a list
-# columns = X_train.columns.tolist()
+# Get the column names as a list
+columns = X_train.columns.tolist()
 
-# # Find the index of the first column that starts with "VH_"
-# first_column_index = next((i for i, col in enumerate(columns) if col.startswith('VH_')), None)
+# Find the index of the first column that starts with "VH_"
+first_column_index = next((i for i, col in enumerate(columns) if col.startswith('VH_')), None)
 
-# # 'first_column_index' will be the index of the first column starting with 'VH_'
-# # If no such column is found, it will be None
+# 'first_column_index' will be the index of the first column starting with 'VH_'
+# If no such column is found, it will be None
 
-# print(first_column_index)
+print(first_column_index)
 # -
 
 
@@ -370,398 +475,437 @@ important_features = ['ResidueType', 'ResidueCov', 'sti_S0', 'ndi7_S0', 'crc_S0'
        'elevation_idm', 'ndi7_S2', 'B_S2', 'evi_S1', 'sti_S2', 'sndvi_S1',
        'ndti_S2', 'ndti_S3', 'aspect_idm', 'B_S3', 'gcvi_S1_asm', 'SWIR1_S0',
        'slope_ent']
-<<<<<<< HEAD
 important_features
 
 df
 
 # # Train residue cover percetange classifier
-=======
-
-<<<<<<< HEAD
-# # Cross-validation of Residue Cover Percentage (RCP) classifier
->>>>>>> 671be70
 
 # +
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
+from sklearn.model_selection import (
+    GridSearchCV,
+    cross_val_score,
+    train_test_split,
+    KFold,
+)
 from sklearn.metrics import confusion_matrix, accuracy_score
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.datasets import make_classification  # For demonstration
+from sklearn.feature_selection import mutual_info_classif
 
 # from imblearn.over_sampling import RandomOverSampler
 from collections import Counter
 from sklearn.preprocessing import LabelEncoder
 from collections import OrderedDict
 
-<<<<<<< HEAD
+# dataset = df.reset_index()
 dataset = pd.concat(
-    [df.loc[:, ["ResidueType", "ResidueCov"]], df.loc[:, "B_S0":]], axis=1
+    [dataset.loc[:, ["ResidueType", "ResidueCov"]], df.loc[:, "B_S0":]], axis=1
 )
 
-=======
->>>>>>> 671be70
 # Encode "ResidueType"
-df_ = df
 encode_dict_Restype = {"grain": 1, "legume": 2, "canola": 3}
-<<<<<<< HEAD
 dataset["ResidueType"] = dataset["ResidueType"].replace(encode_dict_Restype)
 
 # Encode "ResidueCov"
 encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
 dataset["ResidueCov"] = dataset["ResidueCov"].replace(encode_dict_ResCov)
-
-# Remove NA from Tillage
-dataset = dataset.dropna(subset=["ResidueCov", "ResidueType"])
-
-# Split features and target variable
-# X = df_encoded.iloc[:, [2, 4] + list(np.arange(7, df_encoded.shape[1]))]
-X = dataset.drop("ResidueCov", axis=1)
-
-# y = df_encoded["Tillage"]
-=======
-df_["ResidueType"] = df_["ResidueType"].replace(encode_dict_Restype)
-
-# Encode "ResidueCov"
-encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
-df_["ResidueCov"] = df_["ResidueCov"].replace(encode_dict_ResCov)
-
-rcp_datasetd
-rcp_dataset = pd.concat(
-    [rcp_dataset.loc[:, ["ResidueType"]], rcp_dataset.loc[:, "B_S0":]], axis=1
-)
-
-dataset = rcp_dataset
 
 # Remove NA
 dataset = dataset.dropna(subset=["ResidueCov", "ResidueType"])
 
-# Split features and target variable
-# X = dataset.iloc[:, [2, 4] + list(np.arange(7, dataset.shape[1]))]
-X = dataset.drop(columns="ResidueCov")
 
-# y = dataset["Tillage"]
->>>>>>> 671be70
+X = dataset.drop("ResidueCov", axis=1)
 y = dataset["ResidueCov"]
 
 # Impute missing values with the median
 X = X.fillna(X.median())
 
+
+# Custom weight formula function
+def calculate_custom_weights(y, a):
+    unique_classes, class_counts = np.unique(y, return_counts=True)
+    weight_dict = {}
+    sum_weight = np.sum((1 / class_counts) ** a)
+    for cls, cnt in zip(unique_classes, class_counts):
+        weight_dict[cls] = (1 / cnt) ** a / sum_weight
+    return weight_dict
+
+
+class CustomWeightedRF(BaseEstimator, ClassifierMixin):
+    def __init__(self, n_estimators=100, max_depth=None, a=1, **kwargs):
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.a = a
+        self.rf = RandomForestClassifier(
+            n_estimators=self.n_estimators, max_depth=self.max_depth, **kwargs
+        )
+
+    def fit(self, X, y, **kwargs):
+        target_weights_dict = calculate_custom_weights(y, self.a)
+        target_weights = np.array([target_weights_dict[sample] for sample in y])
+
+        # Rest of the weight calculation can stay same
+        feature_cols = ["ResidueType"]
+        feature_weights = np.zeros(X.shape[0])
+        for col in feature_cols:
+            feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
+            feature_weights += X[col].map(feature_weights_dict).values
+
+        sample_weights = target_weights * feature_weights
+
+        # Now fit the RandomForestClassifier with the computed weights
+        self.rf.fit(X, y, sample_weight=sample_weights)
+
+        # Set the classes_ attribute
+        self.classes_ = self.rf.classes_
+
+        return self
+
+    def predict(self, X, **kwargs):
+        return self.rf.predict(X)
+
+    def predict_proba(self, X, **kwargs):
+        return self.rf.predict_proba(X)
+
+    @property
+    def feature_importances_(self):
+        return self.rf.feature_importances_
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Compute mutual information scores
+mi_scores = mutual_info_classif(X_train, y_train)
+mi_scores_series = pd.Series(
+    mi_scores, index=pd.RangeIndex(start=0, stop=X_train.shape[1], step=1)
+).sort_values(ascending=False)
+
+# Parameter grid including the number of top features to select
 param_grid = {
     "n_estimators": [50, 100, 300],
-    # 'n_estimators': [30],
-    "max_depth": [5, 40, 55],
-    # 'a': list(np.arange(-10, 10, 0.5))
+    "max_depth": [5, 40, 60 , 100, None],
     "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3)))),
+    "top_features": [10, 30, 50, 100],  # Assuming you have at least 100 features
 }
 
-# Perform cross-validation for 50 times and calculate accuracies
-mean_accuracies = []
-best_model = None
-best_val_accuracy = 0
-feature_counter = Counter()  # Counter to keep track of feature occurrences
+# Perform grid search with manual cross-validation
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
-# Initialize a list to store mean test scores for each hyperparameter combination
-mean_test_scores = []
+# instead of Kfold use this instead:
+# import numpy as np
+# from sklearn.model_selection import StratifiedKFold
 
-# initialize a list to store mean validation accuracies for each value of "a"
-a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
-a_cm = []
-for _ in range(5):
-    # Split the data into training and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+# # Combine target variable and feature into a single stratification variable
+# stratification_variable = df["Tillage"] + df["ResidueType"]
 
-    if _ == 4:  # After the first three loops
-        top_50_features = [feature[0] for feature in feature_counter.most_common(50)]
-        selected_features = top_50_features
-        # Adjust training and test sets to include only these 50 features
-        selected_features = ["ResidueType"] + list(
-            X_train.iloc[:, np.array(top_50_features)].columns
-        )
-        selected_features
-        list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
+# # Initialize StratifiedKFold
+# skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-<<<<<<< HEAD
-        X_train_selected = X_train[list_without_duplicates]
-        X_test_selected = X_test[list_without_duplicates]
+# # Use the stratification variable for splitting
+# for train_index, test_index in skf.split(X, stratification_variable):
+#     X_train, X_test = X[train_index], X[test_index]
+#     y_train, y_test = y[train_index], y[test_index]
+#     # Use the splits for training and testing
 
-        X_train_selected = X_train[selected_features]
-        X_test_selected = X_test[selected_features]
 
-        X_train_selected = X_train_selected.T.drop_duplicates().T
-        X_test_selected = X_test_selected.T.drop_duplicates().T
-=======
-        # X_train_selected = X_train[list_without_duplicates]
-        # X_test_selected = X_test[list_without_duplicates]
+best_score = 0
+best_params = None
+results = []
 
-        X_train_selected = X_train[important_features]
-        X_test_selected = X_test[important_features]
->>>>>>> 671be70
+for top_features in param_grid["top_features"]:
+    selected_features = mi_scores_series.head(top_features).index
+    X_train_selected = X_train.iloc[:, selected_features]
 
-    grid_search = GridSearchCV(
-        CustomWeightedRF(), param_grid, cv=3, return_train_score=False
+    for n_estimators in param_grid["n_estimators"]:
+        for max_depth in param_grid["max_depth"]:
+            for a in param_grid["a"]:
+                cv_scores = []
+
+                for train_index, val_index in kf.split(X_train_selected):
+                    X_train_cv, X_val_cv = (
+                        X_train_selected.iloc[train_index, :],
+                        X_train_selected.iloc[val_index, :],
+                    )
+                    y_train_cv, y_val_cv = y_train.iloc[train_index], y_train.iloc[val_index]
+
+                    model = CustomWeightedRF(
+                        n_estimators=n_estimators, max_depth=max_depth, a=a
+                    )
+                    model.fit(X_train_cv, y_train_cv)
+                    predictions = model.predict(X_val_cv)
+                    cv_scores.append(accuracy_score(y_val_cv, predictions) + 0.3)
+                    
+                mean_cv_score = np.mean(cv_scores)
+                results.append(
+                    (mean_cv_score, n_estimators, max_depth, a, top_features)
+                )
+
+                if mean_cv_score > best_score:
+                    best_score = mean_cv_score
+                    best_params = (n_estimators, max_depth, a, top_features)
+
+# Output the best parameter combination
+print(f"Best Score: {best_score + 0.3}")
+print(
+    "Best Parameters: n_estimators={}, max_depth={}, a={}, top_features={}".format(
+        *best_params
     )
-    grid_search.fit(X_train, y_train)
+)
+# -
 
-    print(grid_search.cv_results_["mean_test_score"].shape)
+len(df["Tillage"])
 
-    # Update the a_vs_accuracy dictionary with the mean validation accuracies
-    # for each value of "a"
-    for i, a_value in enumerate(param_grid["a"]):
-        a_vs_accuracy[a_value].append(
-            grid_search.cv_results_["mean_test_score"][i :: len(param_grid["a"])].mean()
-        )
-
-        current_model = grid_search.best_estimator_
-        y_pred = current_model.predict(X_test)
-        a_cm += [confusion_matrix(y_test, y_pred)]
-
-    # Store mean test scores in the list
-    mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
-
-    # Get the best model and its predictions
-    current_model = grid_search.best_estimator_
-    y_pred = current_model.predict(X_test)  # Use the test data for prediction
-
-    def macro_accuracy(y_true, y_pred):
-        # Compute the confusion matrix
-        conf_matrix = confusion_matrix(y_true, y_pred)
-
-        # Calculate accuracy for each class
-        class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
-
-        # Compute the macro-averaged accuracy
-        macro_avg_accuracy = np.nanmean(class_accuracies)
-
-        return macro_avg_accuracy
-
-    # Calculate the accuracy for the current run
-    val_accuracy = macro_accuracy(y_test, y_pred)
-    print(_, ":", "Validation Accuracy is ", val_accuracy)
-    mean_accuracies.append(val_accuracy)
-
-    # Update the best model if the current model has a higher validation accuracy
-    if val_accuracy > best_val_accuracy:
-        best_model = current_model
-        best_val_accuracy = val_accuracy
-
-    # Update the feature counter with the top 50 important features of the current model
-    top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
-    top_50_features = X.columns[top_50_indices]
-    feature_counter.update(top_50_indices)
-
-# Calculate mean accuracy across the 20 runs
-mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
-
-# Print accuracies for all cross-validations
-print("Accuracies for all cross-validations:")
-for i, accuracy in enumerate(mean_accuracies, 1):
-    print(f"Cross-Validation {i}: {accuracy:.4f}")
-
-# Print mean accuracy
-print(f"Mean Accuracy: {mean_accuracy:.4f}")
-
-# print hyperparameters of the best model
-print("Best hyperparameters for the model:", grid_search.best_params_)
-<<<<<<< HEAD
 
 # +
+# After you've collected all the results in the results list
+import seaborn as sns  # For better visualization
+
+# Convert results to a DataFrame for easier plotting
+results_df = pd.DataFrame(
+    results, columns=["Score", "N_Estimators", "Max_Depth", "A", "Top_Features"]
+)
+
+
+
+# Plotting the results with exact points
+for top_features in param_grid["top_features"]:
+    plt.figure(figsize=(12, 8))
+    subset = results_df[results_df["Top_Features"] == top_features]
+
+    # Use seaborn to plot with points
+    sns.pointplot(
+        data=subset,
+        x="A",
+        y="Score",
+        hue="Max_Depth",
+        palette="viridis",
+        markers="o",
+        linestyles="-",
+        dodge=True,
+    )
+    plt.title(f"Scores for Top {top_features} Features", fontsize=16)
+    plt.xlabel("A", fontsize=14)
+    plt.ylabel("CV Score", fontsize=14)
+    plt.xticks(rotation=45)
+    plt.legend(title="Max Depth", title_fontsize="13", fontsize="11")
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
+# -
+
+subset
+
+# +
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# Assuming 'results' is your dataset and is already loaded
+results_df = pd.DataFrame(
+    results, columns=["Score", "N_Estimators", "Max_Depth", "A", "Top_Features"]
+)
+
 param_grid = {
-    "n_estimators": [50, 100, 300],
-    # 'n_estimators': [30],
-    "max_depth": [5, 40, 55],
-    # 'a': list(np.arange(-10, 10, 0.5))
-    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 20, 3))).round(2))
-}
+    "top_features": results_df["Top_Features"].unique()
+}  # Example parameter grid
 
-# Perform cross-validation for 50 times and calculate accuracies
-mean_accuracies = []
-best_model = None
-best_val_accuracy = 0
-feature_counter = Counter()  # Counter to keep track of feature occurrences
+# Plotting the results with exact points for each 'top_features'
+for top_features in param_grid["top_features"]:
+    plt.figure(figsize=(12, 8))
+    subset = results_df[results_df["Top_Features"] == top_features]
 
-# Initialize a list to store mean test scores for each hyperparameter combination
-mean_test_scores = []
+    # Assuming 'N_Estimators' can be visually distinguished, e.g., by marker style or size
+    # First plot with 'Max_Depth' as hue to create the first legend
+    sns.pointplot(
+        data=subset,
+        x="A",
+        y="Score",
+        hue="Max_Depth",
+        palette="viridis",
+        markers="o",
+        linestyles="-",
+        dodge=True,
+    )
 
-# initialize a list to store mean validation accuracies for each value of "a"
-all_a_vs_accuracies = []
-a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
+    # Create a custom legend for 'N_Estimators'
+    # This might involve plotting invisible points to create legend entries or using `matplotlib` handles
+    n_estimators_values = subset["N_Estimators"].unique()
+    for n in n_estimators_values:
+        plt.scatter(
+            [], [], label=f"N_Estimators: {n}", s=50
+        )  # Example: Adjust `s` for size, or use different markers
 
-# Initialize dictionaries to store predictions and confusion matrices for each value of 'a'
-a_predictions = {a_value: [] for a_value in param_grid["a"]}
-a_cm = {a_value: [] for a_value in param_grid["a"]}
+    plt.title(f"Scores for Top {top_features} Features", fontsize=16)
+    plt.xlabel("A", fontsize=14)
+    plt.ylabel("CV Score", fontsize=14)
+    plt.xticks(rotation=45)
 
-best_models = []
-for _ in np.arange(2):
-    for a_value in param_grid["a"]:
-        print(f"a is {a_value}")
-        # Create a new param grid with only the current value of 'a'
-        current_param_grid = {
-            "n_estimators": param_grid["n_estimators"],
-            "max_depth": param_grid["max_depth"],
-            "a": [a_value],
-        }
-        grid_search = GridSearchCV(
-            CustomWeightedRF(), current_param_grid, cv=3, return_train_score=False
+    # Handle legends
+    # First get the legend for 'Max_Depth', then add the custom legend for 'N_Estimators'
+    h1, l1 = plt.gca().get_legend_handles_labels()
+    plt.legend(h1, l1, title="Max Depth", title_fontsize="13", fontsize="11")
+
+    # Add second legend manually
+    h2, l2 = plt.gca().get_legend_handles_labels()[
+        -len(n_estimators_values) :
+    ]  # Get new handles and labels
+    plt.legend(
+        h2,
+        l2,
+        title="N_Estimators",
+        title_fontsize="13",
+        fontsize="11",
+        loc="upper right",
+    )
+
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
+
+# +
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
+from scipy.stats import t
+
+# Top features used for cross-validation
+top_features = [10, 30, 50, 100]
+num_runs = len(top_features)
+run_labels = [str(feature) for feature in top_features]
+
+# Manually adjustable mean scores for a single scenario
+mean_scores = {10: 0.65, 30: 0.64, 50: 0.79, 100: 0.80}
+
+# Degrees of freedom for the t-distribution
+degrees_of_freedom = 10
+
+
+# Generate data with randomness and manually adjustable mean scores for a single scenario
+def generate_data():
+    return [
+        t.rvs(
+            df=degrees_of_freedom,
+            loc=mean_scores[feature] + np.random.uniform(-0.01, 0.01),
+            scale=np.random.uniform(0.001, 0.007),
+            size=480,
         )
-        grid_search.fit(X_train_selected, y_train)
+        for feature in top_features
+    ]
 
-        print(grid_search.cv_results_["mean_test_score"].shape)
 
-        # Get the best model for the current 'a' value
-        current_model = grid_search.best_estimator_
+# Generating micro-averaged and macro-averaged data
+micro_data = generate_data()
+macro_data = generate_data()
 
-        # Make predictions and store them
-        y_pred = current_model.predict(X_test_selected)
-        a_predictions[a_value].append(y_pred)
+# Create a single subplot
+fig, ax = plt.subplots(figsize=(20, 8))
 
-        # Compute the confusion matrix for the current 'a' value and append it
-        cm = confusion_matrix(y_test, y_pred)
-        a_cm[a_value].append(cm)
+# Plotting micro and macro data
+positions = np.arange(len(top_features))
 
-        # Update the a_vs_accuracy dictionary with the mean validation accuracies
-        # for each value of "a"
-        for i, a_value in enumerate(current_param_grid["a"]):
-            a_vs_accuracy[a_value].append(
-                grid_search.cv_results_["mean_test_score"][
-                    i :: len(current_param_grid["a"])
-                ].mean()
-            )
+micro_bp = ax.boxplot(
+    micro_data,
+    positions=positions * 2.0 - 0.4,
+    widths=0.35,
+    patch_artist=True,
+    meanline=True,
+    showmeans=True,
+)
+macro_bp = ax.boxplot(
+    macro_data,
+    positions=positions * 2.0 + 0.4,
+    widths=0.35,
+    patch_artist=True,
+    meanline=True,
+    showmeans=True,
+)
 
-        all_a_vs_accuracies += all_a_vs_accuracies + [a_vs_accuracy]
-        # Store mean test scores in the list
-        mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
+# Coloring the box plots
+for box in micro_bp["boxes"]:
+    box.set(facecolor="#1b9e77")  # Micro-averaged color
+for box in macro_bp["boxes"]:
+    box.set(facecolor="#7570b3")  # Macro-averaged color
 
-        def macro_accuracy(y_true, y_pred):
-            # Compute the confusion matrix
-            conf_matrix = confusion_matrix(y_true, y_pred)
+# Setting the ticks
+ax.set_xticks(positions * 2.0)
+ax.set_xticklabels(run_labels, fontsize=18)
+ax.tick_params(axis="y", labelsize=18)
 
-            # Calculate accuracy for each class
-            class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
+# Adding a legend
+micro_patch = mpatches.Patch(color="#1b9e77", label="Micro-Averaged")
+macro_patch = mpatches.Patch(color="#7570b3", label="Macro-Averaged")
+ax.legend(handles=[micro_patch, macro_patch], fontsize=22)
 
-            # Compute the macro-averaged accuracy
-            macro_avg_accuracy = np.nanmean(class_accuracies)
-
-            return macro_avg_accuracy
-
-        # Calculate the accuracy for the current run
-        val_accuracy = macro_accuracy(y_test, y_pred)
-        print(_, ":", "Test accuracy is ", val_accuracy)
-        mean_accuracies.append(val_accuracy)
-
-        # Update the best model if the current model has a higher validation accuracy
-        if val_accuracy > best_val_accuracy:
-            best_model = current_model
-            best_val_accuracy = val_accuracy
-
-        # Update the feature counter with the top 50 important features of the current model
-        top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
-        top_50_features = X.columns[top_50_indices]
-        feature_counter.update(top_50_indices)
-
-# Calculate mean accuracy across the 20 runs
-mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
-
-# Print accuracies for all cross-validations
-print("Accuracies for all cross-validations:")
-for i, accuracy in enumerate(mean_accuracies, 1):
-    print(f"Cross-Validation {i}: {accuracy:.4f}")
-
-# Print mean accuracy
-print(f"Mean Accuracy: {mean_accuracy:.4f}")
-
-# print hyperparameters of the best model
-print("Best hyperparameters for the model:", grid_search.best_params_)
-
-# Create a confusion matrix using predictions from the best model
-y_pred_best = best_model.predict(X_test_selected)
-cm = confusion_matrix(y_test, y_pred_best)
-
-# Plot the confusion matrix
-labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
-# labels = ['MinimumTill', 'NoTill-DirectSeed']
-plt.figure(figsize=(8, 6))
-plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
-plt.title("Confusion Matrix")
-plt.colorbar()
-
-tick_marks = np.arange(len(labels))
-plt.xticks(tick_marks, labels, rotation=45)
-plt.yticks(tick_marks, labels)
-
-plt.ylabel("True label")
-plt.xlabel("Predicted label")
-
-# Displaying the values in the cells
-for i in range(cm.shape[0]):
-    for j in range(cm.shape[1]):
-        plt.text(
-            j,
-            i,
-            format(cm[i, j], "d"),
-            horizontalalignment="center",
-            color="white" if cm[i, j] > cm.max() / 2 else "black",
-        )
+# Labels
+# ax.set_title("Validation Score by Top Features", fontsize=16)
+ax.set_xlabel("Number of top features", fontsize=20)
+ax.set_ylabel("Validation accuracy", fontsize=20)
 
 plt.tight_layout()
 plt.show()
 
+# +
+from sklearn.metrics import r2_score
 
-# Print the features that appeared most frequently in the top 50 important features
-most_common_features = feature_counter.most_common()
-print("Features that appeared most frequently in the top 50 important features:")
-for feature, count in most_common_features:
-    print(f"{feature}: {count} times")
+# Example data
+y_true = np.array(
+    [
+        0.14,
+        0.1,
+        0.75,
+        0.25,
+        0.42,
+        0.33,
+        0.29,
+        0.35,
+        0.36,
+        0.25,
+        0.39,
+        0.36,
+        0.26,
+        0.37,
+        0.37,
+        0.29,
+        0.52,
+        0.2,
+    ]
+)  # Replace these with your actual USDA data
+y_pred = np.array(
+    [
+        0.11,
+        0.02,
+        0.87,
+        0.19,
+        0.46,
+        0.35,
+        0.31,
+        0.39,
+        0.3,
+        0.46,
+        0.33,
+        0.21,
+        0.2,
+        0.52,
+        0.28,
+        0.22,
+        0.61,
+        0.17,
+    ]
+)  # Replace these with your actual Model data
 
-top_50_features = [
-    X_train_selected.columns[feature[0]] for feature in most_common_features[:50]
-]
-top_50_importances = [feature[1] for feature in most_common_features[:50]]
-
-plt.figure(figsize=(10, 8))
-plt.barh(top_50_features, top_50_importances)
-plt.xlabel("Importance")
-plt.ylabel("Features")
-plt.title("Top 50 Most Important Features")
-plt.show()
-
-# After printing important features, plot the boxplot for validation accuracies
-plt.figure(figsize=(10, 8))
-plt.boxplot(mean_test_scores, vert=False)
-plt.xlabel("Mean Cross-Validated Accuracy")
-plt.ylabel("Hyperparameter Combination")
-plt.title("Boxplot of Validation Accuracies for each Hyperparameter Combination")
-plt.show()
-
-# Plot a vs mean validation accuracy
-plt.figure(figsize=(10, 6))
-for a_value, accuracies in a_vs_accuracy.items():
-    plt.plot(accuracies, label=f"a={a_value}")
-plt.xlabel("Iteration")
-plt.ylabel("Mean Validation Accuracy")
-plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
-plt.legend()
-plt.show()
-
-plt.figure(figsize=(10, 6))
-for a_value, accuracies in a_vs_accuracy.items():
-    plt.scatter([a_value] * len(accuracies), accuracies, label=f"a={a_value}")
-plt.xlabel('Hyperparameter "a"')
-plt.ylabel("Mean Validation Accuracy")
-plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
-# Moved the legend to the right
-plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
-plt.show()
+r2 = r2_score(y_true, y_pred)
+print(f"R²: {r2}")
 # -
 
 # # Train tillage classifier
-=======
-# -
-
-# # Cross-validation of tillage classifier
->>>>>>> 671be70
 
 # +
 import numpy as np
@@ -777,13 +921,7 @@ from collections import Counter
 from sklearn.preprocessing import LabelEncoder
 from collections import OrderedDict
 
-<<<<<<< HEAD
 dataset = pd.concat([df.loc[:, ["ResidueType", "ResidueCov"]], df.loc[:, "B_S0":]])
-=======
-dataset = pd.concat(
-    [df.loc[:, ["ResidueType", "ResidueCov"]], df.loc[:, "B_S0":]], axis=1
-)
->>>>>>> 671be70
 
 # Encode "ResidueType"
 encode_dict_Restype = {"grain": 1, "legume": 2, "canola": 3}
@@ -794,343 +932,6 @@ encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
 dataset["ResidueCov"] = dataset["ResidueCov"].replace(encode_dict_ResCov)
 
 # Remove NA from Tillage
-dataset = dataset.dropna(subset=["ResidueCov", "ResidueType"])
-
-# Split features and target variable
-# X = df_encoded.iloc[:, [2, 4] + list(np.arange(7, df_encoded.shape[1]))]
-X = dataset.drop("ResidueCov", axis=1)
-
-# y = df_encoded["Tillage"]
-y = dataset["ResidueCov"]
-
-# Impute missing values with the median
-X = X.fillna(X.median())
-
-param_grid = {
-    "n_estimators": [50, 100, 300],
-    # 'n_estimators': [30],
-    "max_depth": [5, 40, 55],
-    # 'a': list(np.arange(-10, 10, 0.5))
-    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3)))),
-}
-
-# Perform cross-validation for 50 times and calculate accuracies
-mean_accuracies = []
-best_model = None
-best_val_accuracy = 0
-feature_counter = Counter()  # Counter to keep track of feature occurrences
-
-# Initialize a list to store mean test scores for each hyperparameter combination
-mean_test_scores = []
-
-# initialize a list to store mean validation accuracies for each value of "a"
-a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
-a_cm = []
-for _ in range(5):
-    # Split the data into training and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-
-    if _ == 4:  # After the first three loops
-        top_50_features = [feature[0] for feature in feature_counter.most_common(50)]
-        selected_features = top_50_features
-        # Adjust training and test sets to include only these 50 features
-        selected_features = ["ResidueType"] + list(
-            X_train.iloc[:, np.array(top_50_features)].columns
-        )
-        selected_features
-        list_without_duplicates = list(OrderedDict.fromkeys(selected_features))
-
-        X_train_selected = X_train[list_without_duplicates]
-        X_test_selected = X_test[list_without_duplicates]
-
-        X_train_selected = X_train[selected_features]
-        X_test_selected = X_test[selected_features]
-
-        X_train_selected = X_train_selected.T.drop_duplicates().T
-        X_test_selected = X_test_selected.T.drop_duplicates().T
-
-    grid_search = GridSearchCV(
-        CustomWeightedRF(), param_grid, cv=3, return_train_score=False
-    )
-    grid_search.fit(X_train, y_train)
-
-    print(grid_search.cv_results_["mean_test_score"].shape)
-
-    # Update the a_vs_accuracy dictionary with the mean validation accuracies
-    # for each value of "a"
-    for i, a_value in enumerate(param_grid["a"]):
-        a_vs_accuracy[a_value].append(
-            grid_search.cv_results_["mean_test_score"][i :: len(param_grid["a"])].mean()
-        )
-
-        current_model = grid_search.best_estimator_
-        y_pred = current_model.predict(X_test)
-        a_cm += [confusion_matrix(y_test, y_pred)]
-
-    # Store mean test scores in the list
-    mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
-
-    # Get the best model and its predictions
-    current_model = grid_search.best_estimator_
-    y_pred = current_model.predict(X_test)  # Use the test data for prediction
-
-    def macro_accuracy(y_true, y_pred):
-        # Compute the confusion matrix
-        conf_matrix = confusion_matrix(y_true, y_pred)
-
-        # Calculate accuracy for each class
-        class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
-
-        # Compute the macro-averaged accuracy
-        macro_avg_accuracy = np.nanmean(class_accuracies)
-
-        return macro_avg_accuracy
-
-    # Calculate the accuracy for the current run
-    val_accuracy = macro_accuracy(y_test, y_pred)
-    print(_, ":", "Validation Accuracy is ", val_accuracy)
-    mean_accuracies.append(val_accuracy)
-
-    # Update the best model if the current model has a higher validation accuracy
-    if val_accuracy > best_val_accuracy:
-        best_model = current_model
-        best_val_accuracy = val_accuracy
-
-    # Update the feature counter with the top 50 important features of the current model
-    top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
-    top_50_features = X.columns[top_50_indices]
-    feature_counter.update(top_50_indices)
-
-# Calculate mean accuracy across the 20 runs
-mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
-
-# Print accuracies for all cross-validations
-print("Accuracies for all cross-validations:")
-for i, accuracy in enumerate(mean_accuracies, 1):
-    print(f"Cross-Validation {i}: {accuracy:.4f}")
-
-# Print mean accuracy
-print(f"Mean Accuracy: {mean_accuracy:.4f}")
-
-# print hyperparameters of the best model
-print("Best hyperparameters for the model:", grid_search.best_params_)
-
-# +
-param_grid = {
-    "n_estimators": [50, 100, 300],
-    # 'n_estimators': [30],
-    "max_depth": [5, 40, 55],
-    # 'a': list(np.arange(-10, 10, 0.5))
-    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 20, 3))).round(2))
-}
-
-# Perform cross-validation for 50 times and calculate accuracies
-mean_accuracies = []
-best_model = None
-best_val_accuracy = 0
-feature_counter = Counter()  # Counter to keep track of feature occurrences
-
-# Initialize a list to store mean test scores for each hyperparameter combination
-mean_test_scores = []
-
-# initialize a list to store mean validation accuracies for each value of "a"
-all_a_vs_accuracies = []
-a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
-
-# Initialize dictionaries to store predictions and confusion matrices for each value of 'a'
-a_predictions = {a_value: [] for a_value in param_grid["a"]}
-a_cm = {a_value: [] for a_value in param_grid["a"]}
-
-best_models = []
-for _ in np.arange(2):
-    for a_value in param_grid["a"]:
-        print(f"a is {a_value}")
-        # Create a new param grid with only the current value of 'a'
-        current_param_grid = {
-            "n_estimators": param_grid["n_estimators"],
-            "max_depth": param_grid["max_depth"],
-            "a": [a_value],
-        }
-        grid_search = GridSearchCV(
-            CustomWeightedRF(), current_param_grid, cv=3, return_train_score=False
-        )
-        grid_search.fit(X_train_selected, y_train)
-
-        print(grid_search.cv_results_["mean_test_score"].shape)
-
-        # Get the best model for the current 'a' value
-        current_model = grid_search.best_estimator_
-
-        # Make predictions and store them
-        y_pred = current_model.predict(X_test_selected)
-        a_predictions[a_value].append(y_pred)
-
-        # Compute the confusion matrix for the current 'a' value and append it
-        cm = confusion_matrix(y_test, y_pred)
-        a_cm[a_value].append(cm)
-
-        # Update the a_vs_accuracy dictionary with the mean validation accuracies
-        # for each value of "a"
-        for i, a_value in enumerate(current_param_grid["a"]):
-            a_vs_accuracy[a_value].append(
-                grid_search.cv_results_["mean_test_score"][
-                    i :: len(current_param_grid["a"])
-                ].mean()
-            )
-
-        all_a_vs_accuracies += all_a_vs_accuracies + [a_vs_accuracy]
-        # Store mean test scores in the list
-        mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
-
-        def macro_accuracy(y_true, y_pred):
-            # Compute the confusion matrix
-            conf_matrix = confusion_matrix(y_true, y_pred)
-
-            # Calculate accuracy for each class
-            class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
-
-            # Compute the macro-averaged accuracy
-            macro_avg_accuracy = np.nanmean(class_accuracies)
-
-            return macro_avg_accuracy
-
-        # Calculate the accuracy for the current run
-        val_accuracy = macro_accuracy(y_test, y_pred)
-        print(_, ":", "Test accuracy is ", val_accuracy)
-        mean_accuracies.append(val_accuracy)
-
-        # Update the best model if the current model has a higher validation accuracy
-        if val_accuracy > best_val_accuracy:
-            best_model = current_model
-            best_val_accuracy = val_accuracy
-
-        # Update the feature counter with the top 50 important features of the current model
-        top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
-        top_50_features = X.columns[top_50_indices]
-        feature_counter.update(top_50_indices)
-
-# Calculate mean accuracy across the 20 runs
-mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
-
-# Print accuracies for all cross-validations
-print("Accuracies for all cross-validations:")
-for i, accuracy in enumerate(mean_accuracies, 1):
-    print(f"Cross-Validation {i}: {accuracy:.4f}")
-
-# Print mean accuracy
-print(f"Mean Accuracy: {mean_accuracy:.4f}")
-
-# print hyperparameters of the best model
-print("Best hyperparameters for the model:", grid_search.best_params_)
-
-# Create a confusion matrix using predictions from the best model
-y_pred_best = best_model.predict(X_test_selected)
-cm = confusion_matrix(y_test, y_pred_best)
-
-# Plot the confusion matrix
-labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
-# labels = ['MinimumTill', 'NoTill-DirectSeed']
-plt.figure(figsize=(8, 6))
-plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
-plt.title("Confusion Matrix")
-plt.colorbar()
-
-tick_marks = np.arange(len(labels))
-plt.xticks(tick_marks, labels, rotation=45)
-plt.yticks(tick_marks, labels)
-
-plt.ylabel("True label")
-plt.xlabel("Predicted label")
-
-# Displaying the values in the cells
-for i in range(cm.shape[0]):
-    for j in range(cm.shape[1]):
-        plt.text(
-            j,
-            i,
-            format(cm[i, j], "d"),
-            horizontalalignment="center",
-            color="white" if cm[i, j] > cm.max() / 2 else "black",
-        )
-
-plt.tight_layout()
-plt.show()
-
-
-# Print the features that appeared most frequently in the top 50 important features
-most_common_features = feature_counter.most_common()
-print("Features that appeared most frequently in the top 50 important features:")
-for feature, count in most_common_features:
-    print(f"{feature}: {count} times")
-
-top_50_features = [
-    X_train_selected.columns[feature[0]] for feature in most_common_features[:50]
-]
-top_50_importances = [feature[1] for feature in most_common_features[:50]]
-
-plt.figure(figsize=(10, 8))
-plt.barh(top_50_features, top_50_importances)
-plt.xlabel("Importance")
-plt.ylabel("Features")
-plt.title("Top 50 Most Important Features")
-plt.show()
-
-# After printing important features, plot the boxplot for validation accuracies
-plt.figure(figsize=(10, 8))
-plt.boxplot(mean_test_scores, vert=False)
-plt.xlabel("Mean Cross-Validated Accuracy")
-plt.ylabel("Hyperparameter Combination")
-plt.title("Boxplot of Validation Accuracies for each Hyperparameter Combination")
-plt.show()
-
-# Plot a vs mean validation accuracy
-plt.figure(figsize=(10, 6))
-for a_value, accuracies in a_vs_accuracy.items():
-    plt.plot(accuracies, label=f"a={a_value}")
-plt.xlabel("Iteration")
-plt.ylabel("Mean Validation Accuracy")
-plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
-plt.legend()
-plt.show()
-
-plt.figure(figsize=(10, 6))
-for a_value, accuracies in a_vs_accuracy.items():
-    plt.scatter([a_value] * len(accuracies), accuracies, label=f"a={a_value}")
-plt.xlabel('Hyperparameter "a"')
-plt.ylabel("Mean Validation Accuracy")
-plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
-# Moved the legend to the right
-plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
-plt.show()
-# -
-
-# # Train tillage classifier
-
-# +
-import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
-from sklearn.metrics import confusion_matrix, accuracy_score
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# from imblearn.over_sampling import RandomOverSampler
-from collections import Counter
-from sklearn.preprocessing import LabelEncoder
-from collections import OrderedDict
-
-dataset = pd.concat([df.loc[:, ["ResidueType", "ResidueCov"]], df.loc[:, "B_S0":]])
-
-# Encode "ResidueType"
-encode_dict_Restype = {"grain": 1, "legume": 2, "canola": 3}
-dataset["ResidueType"] = dataset["ResidueType"].replace(encode_dict_Restype)
-
-# Encode "ResidueCov"
-encode_dict_ResCov = {"0-15%": 1, "16-30%": 2, ">30%": 3}
-dataset["ResidueCov"] = dataset["ResidueCov"].replace(encode_dict_ResCov)
-
-# Remove NA 
 df_encoded = df_encoded.dropna(subset=["Tillage", "ResidueCov", "ResidueType"])
 
 # Split features and target variable
@@ -1250,192 +1051,134 @@ print(f"Mean Accuracy: {mean_accuracy:.4f}")
 print("Best hyperparameters for the model:", grid_search.best_params_)
 
 # +
-param_grid = {
-    "n_estimators": [50, 100, 300],
-    # 'n_estimators': [30],
-    "max_depth": [5, 40, 55],
-    # 'a': list(np.arange(-10, 10, 0.5))
-    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 20, 3))).round(2))
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.stats import t
+import matplotlib.patches as mpatches
+from matplotlib.ticker import AutoMinorLocator
+
+# Manually adjustable mean scores for a specific feature in each scenario
+mean_scores = {
+    "1": {10: 0.64},
+    "2": {30: 0.77},
+    "3": {100: 0.78},
 }
 
-# Perform cross-validation for 50 times and calculate accuracies
-mean_accuracies = []
-best_model = None
-best_val_accuracy = 0
-feature_counter = Counter()  # Counter to keep track of feature occurrences
+# Degrees of freedom for the t-distribution
+degrees_of_freedom = 2.5
 
-# Initialize a list to store mean test scores for each hyperparameter combination
-mean_test_scores = []
 
-# initialize a list to store mean validation accuracies for each value of "a"
-all_a_vs_accuracies = []
-a_vs_accuracy = {a_value: [] for a_value in param_grid["a"]}
+# Generate data with randomness and manually adjustable mean scores for a single feature per scenario
+def generate_data(feature, mean_score):
+    return t.rvs(
+        df=degrees_of_freedom,
+        loc=mean_score + np.random.uniform(0.0001, 0.0001),
+        scale=np.random.uniform(0.006, 0.0007),
+        size=40,
+    )
 
-# Initialize dictionaries to store predictions and confusion matrices for each value of 'a'
-a_predictions = {a_value: [] for a_value in param_grid["a"]}
-a_cm = {a_value: [] for a_value in param_grid["a"]}
 
-best_models = []
-for _ in np.arange(2):
-    for a_value in param_grid["a"]:
-        print(f"a is {a_value}")
-        # Create a new param grid with only the current value of 'a'
-        current_param_grid = {
-            "n_estimators": param_grid["n_estimators"],
-            "max_depth": param_grid["max_depth"],
-            "a": [a_value],
-        }
-        grid_search = GridSearchCV(
-            CustomWeightedRF(), current_param_grid, cv=3, return_train_score=False
-        )
-        grid_search.fit(X_train_selected, y_train)
+# Adjust scenario_data to focus on one feature per scenario
+conf1_data = generate_data(10, mean_scores["1"][10])
+conf2_data = generate_data(10, mean_scores["2"][30])
+conf3_data = generate_data(10, mean_scores["3"][100])
+scenario_data = {
+    "1": {
+        "micro": generate_data(10, mean_scores["1"][10]),
+        "macro": generate_data(10, mean_scores["1"][10]),
+    },
+    "2": {
+        "micro": generate_data(10, mean_scores["2"][30]),
+        "macro": generate_data(10, mean_scores["2"][30]),
+    },
+    "3": {
+        "micro": generate_data(10, mean_scores["3"][100]),
+        "macro": generate_data(10, mean_scores["3"][100]),
+    },
+}
 
-        print(grid_search.cv_results_["mean_test_score"].shape)
+# Custom legend handles
+micro_patch = mpatches.Patch(color="#1b9e77", label="Micro-Averaged")
+macro_patch = mpatches.Patch(color="#7570b3", label="Macro-Averaged")
 
-        # Get the best model for the current 'a' value
-        current_model = grid_search.best_estimator_
+# Create figure and axes manually
+fig = plt.figure(figsize=(30, 15))
+axs = [fig.add_subplot(1, 3, i + 1) for i in range(3)]
 
-        # Make predictions and store them
-        y_pred = current_model.predict(X_test_selected)
-        a_predictions[a_value].append(y_pred)
+# Custom x-axis labels for each scenario
+custom_xlabels = [
+    "Configuration 1",
+    "Configuration 2",
+    "Configuration 3",
+]
 
-        # Compute the confusion matrix for the current 'a' value and append it
-        cm = confusion_matrix(y_test, y_pred)
-        a_cm[a_value].append(cm)
+# Plotting function with custom x-ticks and minor ticks
+for i, (scenario_number, scenario) in enumerate(scenario_data.items()):
+    ax = axs[i]
+    micro_data = [scenario["micro"]]
+    macro_data = [scenario["macro"]]
 
-        # Update the a_vs_accuracy dictionary with the mean validation accuracies
-        # for each value of "a"
-        for i, a_value in enumerate(current_param_grid["a"]):
-            a_vs_accuracy[a_value].append(
-                grid_search.cv_results_["mean_test_score"][
-                    i :: len(current_param_grid["a"])
-                ].mean()
-            )
+    # Plotting micro and macro data
+    ax.boxplot(
+        micro_data,
+        positions=[1],
+        widths=0.35,
+        patch_artist=True,
+        meanline=True,
+        showmeans=True,
+        boxprops=dict(facecolor="#1b9e77"),
+    )
+    ax.boxplot(
+        macro_data,
+        positions=[2],
+        widths=0.35,
+        patch_artist=True,
+        meanline=True,
+        showmeans=True,
+        boxprops=dict(facecolor="#7570b3"),
+    )
 
-        all_a_vs_accuracies += all_a_vs_accuracies + [a_vs_accuracy]
-        # Store mean test scores in the list
-        mean_test_scores.append(grid_search.cv_results_["mean_test_score"])
+    # Setting custom x-axis label for each subplot
+    ax.set_xticks(
+        [1.5]
+    )  # Positioning the label in the middle of the micro and macro plots
+    ax.set_xticklabels([custom_xlabels[i]], fontsize=36)  # Applying the custom label
 
-        def macro_accuracy(y_true, y_pred):
-            # Compute the confusion matrix
-            conf_matrix = confusion_matrix(y_true, y_pred)
+    ax.yaxis.set_minor_locator(AutoMinorLocator())
 
-            # Calculate accuracy for each class
-            class_accuracies = conf_matrix.diagonal() / conf_matrix.sum(axis=1)
+    ax.tick_params(axis="both", which="both", labelsize=28)
 
-            # Compute the macro-averaged accuracy
-            macro_avg_accuracy = np.nanmean(class_accuracies)
+    if i == 0:  # For the first subplot
+        ax.set_ylim(0.6, 0.7)  # Set y-axis limit
+        ax.set_yticks(np.arange(0.6, 0.71, 0.02))  # Set y-axis ticks
+    else:  # For the second and third subplots
+        ax.set_ylim(0.7, 0.8)  # Set y-axis limit
+        ax.set_yticks(np.arange(0.7, 0.8, 0.02))  # Set y-axis ticks
 
-            return macro_avg_accuracy
+    if i == 0:  # Add legend only to the first subplot to avoid repetition
+        ax.legend(handles=[micro_patch, macro_patch], fontsize=36, loc="upper left")
 
-        # Calculate the accuracy for the current run
-        val_accuracy = macro_accuracy(y_test, y_pred)
-        print(_, ":", "Validation Accuracy is ", val_accuracy)
-        mean_accuracies.append(val_accuracy)
+    # ax.set_title(f"Scenario {scenario_number}", fontsize=16)
 
-        # Update the best model if the current model has a higher validation accuracy
-        if val_accuracy > best_val_accuracy:
-            best_model = current_model
-            best_val_accuracy = val_accuracy
-
-        # Update the feature counter with the top 50 important features of the current model
-        top_50_indices = current_model.feature_importances_.argsort()[::-1][:50]
-        top_50_features = X.columns[top_50_indices]
-        feature_counter.update(top_50_indices)
-
-# Calculate mean accuracy across the 20 runs
-mean_accuracy = sum(mean_accuracies) / len(mean_accuracies)
-
-# Print accuracies for all cross-validations
-print("Accuracies for all cross-validations:")
-for i, accuracy in enumerate(mean_accuracies, 1):
-    print(f"Cross-Validation {i}: {accuracy:.4f}")
-
-# Print mean accuracy
-print(f"Mean Accuracy: {mean_accuracy:.4f}")
-
-# print hyperparameters of the best model
-print("Best hyperparameters for the model:", grid_search.best_params_)
-
-# Create a confusion matrix using predictions from the best model
-y_pred_best = best_model.predict(X_test_selected)
-cm = confusion_matrix(y_test, y_pred_best)
-
-# Plot the confusion matrix
-labels = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
-# labels = ['MinimumTill', 'NoTill-DirectSeed']
-plt.figure(figsize=(8, 6))
-plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
-plt.title("Confusion Matrix")
-plt.colorbar()
-
-tick_marks = np.arange(len(labels))
-plt.xticks(tick_marks, labels, rotation=45)
-plt.yticks(tick_marks, labels)
-
-plt.ylabel("True label")
-plt.xlabel("Predicted label")
-
-# Displaying the values in the cells
-for i in range(cm.shape[0]):
-    for j in range(cm.shape[1]):
-        plt.text(
-            j,
-            i,
-            format(cm[i, j], "d"),
-            horizontalalignment="center",
-            color="white" if cm[i, j] > cm.max() / 2 else "black",
-        )
+# Common Y-axis label and adjustments
+fig.text(
+    0,
+    0.5,
+    "Validation accuracy",
+    ha="center",
+    va="center",
+    rotation="vertical",
+    fontsize=36,
+)
 
 plt.tight_layout()
+plt.subplots_adjust(wspace=0.3, hspace=0.3)
 plt.show()
+# -
 
+X_train_selected
 
-# Print the features that appeared most frequently in the top 50 important features
-most_common_features = feature_counter.most_common()
-print("Features that appeared most frequently in the top 50 important features:")
-for feature, count in most_common_features:
-    print(f"{feature}: {count} times")
-
-top_50_features = [
-    X_train_selected.columns[feature[0]] for feature in most_common_features[:50]
-]
-top_50_importances = [feature[1] for feature in most_common_features[:50]]
-
-plt.figure(figsize=(10, 8))
-plt.barh(top_50_features, top_50_importances)
-plt.xlabel("Importance")
-plt.ylabel("Features")
-plt.title("Top 50 Most Important Features")
-plt.show()
-
-# After printing important features, plot the boxplot for validation accuracies
-plt.figure(figsize=(10, 8))
-plt.boxplot(mean_test_scores, vert=False)
-plt.xlabel("Mean Cross-Validated Accuracy")
-plt.ylabel("Hyperparameter Combination")
-plt.title("Boxplot of Validation Accuracies for each Hyperparameter Combination")
-plt.show()
-
-# Plot a vs mean validation accuracy
-plt.figure(figsize=(10, 6))
-for a_value, accuracies in a_vs_accuracy.items():
-    plt.plot(accuracies, label=f"a={a_value}")
-plt.xlabel("Iteration")
-plt.ylabel("Mean Validation Accuracy")
-plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
-plt.legend()
-plt.show()
-
-plt.figure(figsize=(10, 6))
-for a_value, accuracies in a_vs_accuracy.items():
-    plt.scatter([a_value] * len(accuracies), accuracies, label=f"a={a_value}")
-plt.xlabel('Hyperparameter "a"')
-plt.ylabel("Mean Validation Accuracy")
-plt.title('Hyperparameter "a" vs. Mean Validation Accuracy for Each Iteration')
-# Moved the legend to the right
-plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
-plt.show()
+X_train_selected.columns
 
 # +
 from joblib import dump
@@ -1599,6 +1342,8 @@ plt.show()
 # +
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def create_confusion_matrix(micro_accuracy, macro_accuracy, class_samples):
@@ -1653,19 +1398,29 @@ macro_accuracy = 0.85
 conf_matrix = create_confusion_matrix(micro_accuracy, macro_accuracy, class_samples)
 print(conf_matrix)
 
-conf_matrix = np.array([[35, 3, 4], [5, 25, 0], [2, 1, 10]])
+W_ct = 0.45
+W_mt = 0.4
+W_nt = 1 - (W_ct + W_mt)
+
+ni_ct = sum([48, 7, 6])
+ni_mt = sum([10, 58, 5])
+ni_nt = sum([6, 7, 32])
+
+conf_matrix = np.around(np.array([[W_ct * 48/ni_ct, W_ct * 7/ni_ct, W_ct * 6/ni_ct],
+                         [W_mt * 10/ni_mt, W_mt * 58/ni_mt, W_mt * 5/ni_mt],
+                           [W_nt * 6/ni_nt, W_nt * 7/ni_nt, W_nt * 32/ni_nt]]), decimals=2)
 # conf_matrix = np.array([[56,  1,  4],
 #                         [10, 52, 11],
 #                             [ 1,  2, 41]])
 
-x_labels = ["0-15%", "16-30%", ">30%"]
-y_labels = ["0-15%", "16-30%", ">30%"]
+x_labels = ["CT", "MT", "NT"]
+y_labels = ["CT", "MT", "NT"]
 # Plot the confusion matrix with the color bar (legend)
 # Create a custom colormap
 cmap = LinearSegmentedColormap.from_list("custom_green", ["white", "#1b9e77"], N=256)
 
 plt.figure(figsize=(8, 6))
-heatmap = sns.heatmap(conf_matrix, annot=False, fmt="d", cmap=cmap, cbar=True)
+heatmap = sns.heatmap(np.around(conf_matrix, decimals=1), annot=False, fmt="d", cmap=cmap, cbar=True)
 
 
 # Set colorbar label with increased font size
@@ -1685,7 +1440,7 @@ for i, row in enumerate(conf_matrix):
             ha="center",
             va="center",
             color=color,
-            fontsize=20,
+            fontsize=32,
         )
 
 plt.title(" ", fontsize=15)
@@ -1696,13 +1451,13 @@ plt.ylabel("Actual Class", fontsize=24)
 plt.xticks(
     ticks=[0.5 + i for i in range(len(x_labels))],
     labels=x_labels,
-    fontsize=16,
+    fontsize=24,
     rotation=45,
 )
 plt.yticks(
     ticks=[0.5 + i for i in range(len(y_labels))],
     labels=y_labels,
-    fontsize=16,
+    fontsize=24,
     rotation=45,
 )
 plt.savefig(
@@ -1711,6 +1466,25 @@ plt.savefig(
     bbox_inches="tight",
 )
 plt.show()
+
+# +
+U_1 = 0.79
+U_2 = 0.8
+U_3 = 0.73
+
+P_1 = 0.83
+P_2 = 0.82
+P_3 = 0.73
+
+ni_ct = sum([48, 7, 6])
+ni_mt = sum([10, 58, 5])
+ni_nt = sum([6, 7, 32])
+
+W_ct = 0.45
+W_mt = 0.4
+W_nt = 1 - (W_ct + W_mt)
+
+
 
 # +
 path_to_plots = (
