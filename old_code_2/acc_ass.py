@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: tillmap
 #     language: python
@@ -71,16 +71,16 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         return self.rf.feature_importances_
 
 
-# # Read data
-# path_to_data = (
-#     "/Users/aminnorouzi/Library/CloudStorage/"
-#     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-#     "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/"
-# )
+# Read data
+path_to_data = (
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "Projects/Tillage_Mapping/Data/field_level_data/FINAL_DATA/"
+)
 
-path_to_data = ("/home/amnnrz/OneDrive - "
-                "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
-                "/field_level_data/FINAL_DATA/")
+# path_to_data = ("/home/amnnrz/OneDrive - "
+#                 "a.norouzikandelati/Ph.D/Projects/Tillage_Mapping/Data"
+#                 "/field_level_data/FINAL_DATA/")
 
 df = pd.read_csv(path_to_data + "season_finalData_with_county.csv")
 df = df.dropna(subset=["Tillage", "ResidueType", "ResidueCov"])
@@ -134,9 +134,12 @@ print("\n")
 print(df1["ResidueCov"].value_counts(), df2["ResidueCov"].value_counts())
 
 df = pd.concat([df1, df2])
+df = df.reset_index()
+df
 # -
 
 df["Tillage"].value_counts()
+
 
 # +
 # Define the number of samples you want from each category
@@ -198,3 +201,142 @@ sampled_df["Tillage"].value_counts()
 
 sampled_df["act_pred"] = sampled_df["Actual"] + "_" + sampled_df["Predicted"]
 sampled_df["act_pred"].value_counts()
+
+import geopandas as gpd
+path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "Projects/Tillage_Mapping/Data/")
+df_2022 = gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/final_shp_2122.shp")
+df_2023 = gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/final_shp_2223.shp")
+
+df_2022[["Acres", "pointID"]]
+df_2023 = df_2023.rename(columns={"CSBACRES": "Acres"})
+df_2023[["Acres", "pointID"]]
+df_2223 = pd.concat([df_2022[["Acres", "pointID"]], df_2023[["Acres", "pointID"]]])
+df_2223
+
+sampled_df
+
+df_ = pd.merge(sampled_df, df_2223, on="pointID", how="left")
+df_.columns.to_list()
+
+df_[["pointID", "act_pred", "Tillage", "Acres", "Predicted"]]
+
+df = df_
+
+# +
+# Calculate total acres for each actual class
+total_acres_by_class = df.groupby("Tillage")["Acres"].sum()
+
+# Total acres
+total_acres = total_acres_by_class.sum()
+
+# Calculate Wi for each class
+Wi = total_acres_by_class / total_acres
+
+# Creating a cross-tabulation of Actual vs Predicted to get nij
+confusion_counts = pd.crosstab(df["Predicted"], df["Tillage"])
+
+# Calculating ni+ (sum of counts for each class across rows)
+ni_plus = confusion_counts.sum(axis=1)
+
+# Calculate Pij for each cell in the confusion matrix
+Pij = confusion_counts.apply(lambda row: Wi[row.name] * row / ni_plus[row.name], axis=1)
+
+Pij
+# -
+
+ni_plus
+
+total_acres_by_class
+
+Wi
+
+confusion_counts
+
+confusion_counts.apply(lambda row: print(row), axis=1)
+
+
+confusion_counts
+
+confusion_counts.sum(axis=0)
+
+# +
+# Calculate the overall accuracy (O)
+overall_accuracy = np.trace(Pij)
+
+
+# Sum of rows (p_i+), total predicted area for each class
+row_sums = Pij.sum(axis=1)
+
+# Calculate User's Accuracy (U_i) for each class
+users_accuracy = Pij.apply(lambda row: row[row.name] / row_sums[row.name], axis=1)
+users_accuracy
+
+# Sum of columns (p_+j), total actual area for each class
+column_sums = Pij.sum(axis=0)
+
+# Calculate Producer's Accuracy (P_j) for each class
+producers_accuracy = Pij.apply(
+    lambda col: col[col.name] / column_sums[col.name], axis=0
+)
+producers_accuracy
+
+# Calculate variance of User's Accuracy for each class
+variance_users_accuracy = users_accuracy * (1 - users_accuracy) / (ni_plus - 1)
+
+# Calculate standard error of User's Accuracy for each class
+S_u = np.sqrt(variance_users_accuracy)
+
+# Calculate the variance of the overall accuracy (V_hat(O_hat))
+variance_overall_accuracy = np.sum(
+    (Wi**2) * users_accuracy * (1 - users_accuracy) / (ni_plus - 1)
+)
+S_o = np.sqrt(variance_overall_accuracy)
+S_o
+
+
+import numpy as np
+import pandas as pd
+
+# Assuming 'confusion_matrix', 'producers_accuracy', and 'users_accuracy' are available
+# Example structure for 'confusion_matrix' is a DataFrame with actual classes as columns and predicted as rows
+
+
+# Sum of each column (N_+j)
+N_plus_j = confusion_counts.sum(axis=0)
+
+# Sum of each row (N_j+)
+N_j_plus = confusion_counts.sum(axis=1)
+
+# Calculate variance for each producer's accuracy (P_j)
+variance_producers_accuracy = {}
+for j in producers_accuracy.index:
+    P_j = producers_accuracy[j]
+    U_j = users_accuracy[j]  # Assuming same index as producers_accuracy for simplicity
+    first_term = N_plus_j[j] ** 2 * (1 - P_j) * U_j * (1 - U_j) / (N_plus_j[j] - 1)
+
+    second_term_sum = 0
+    for i in producers_accuracy.index:
+        if i != j:
+            n_ij = confusion_counts.loc[i, j]
+            second_term_sum += (n_ij**2) * (
+                (1 - n_ij / N_j_plus[i]) / (N_j_plus[i] - 1)
+            )
+
+    second_term = P_j**2 * second_term_sum
+    variance_producers_accuracy[j] = (1 / N_plus_j[j] ** 2) * (first_term + second_term)
+
+    # Printing variance and standard error for each class
+    var = variance_producers_accuracy[j]
+    se = np.sqrt(var)
+    print(f"Class {j}: Variance = {var}, Standard Error = {se}")
+# -
+
+print(overall_accuracy)
+print(users_accuracy)
+print(producers_accuracy)
+print(S_o)
+print(S_u)
+
+
