@@ -367,7 +367,7 @@ def eefeatureColl_to_Pandas(yearlyList, bandNames, important_columns_names):
     df_yi = pd.DataFrame([])
     for j in range(year_i.length().getInfo()):
       f_j = year_i.get(j)  # Jth featureCollection (reduced composite data)
-      df_j = geemap.ee_to_pandas(ee.FeatureCollection(f_j))  # Convert featureCollection to pandas dataframe
+      df_j = geemap.ee_to_geopandas(ee.FeatureCollection(f_j))  # Convert featureCollection to pandas dataframe
       df_j = df_j[df_j.columns[(df_j.columns).isin(important_columns)]]   # Pick needed columns
       df_yi = pd.concat([df_yi, df_j], axis=1)
     df_yi = df_yi.loc[:,~df_yi.columns.duplicated()]   # Drop repeated 'pointID' columns
@@ -565,11 +565,6 @@ geometry = ee.Geometry.Polygon(
 
 geometry2 = ee.Geometry.Point([-117.10053796709163, 46.94957951590986]),
 
-asset_folder = "projects/ee-bio-ag-tillage/assets/tillmap_shp"
-
-assets_list = ee.data.getList({'id': asset_folder})
-shpfilesList = [i['id'] for i in assets_list]
-
 path_to_data = ('/Users/aminnorouzi/Library/CloudStorage/'
                 'OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/'
                 'Projects/Tillage_Mapping/Data/')
@@ -577,10 +572,25 @@ path_to_data = ('/Users/aminnorouzi/Library/CloudStorage/'
 # path_to_data = ('/home/amnnrz/OneDrive - a.norouzikandelati/Ph.D/Projects/'
 #                 'Tillage_Mapping/Data/')
 
+
+shapefiles = [
+    file
+    for file in os.listdir(path_to_data + "GIS_Data/final_shpfiles")
+    if file.endswith(".shp")
+]
+
+shpfilesList = [geemap.geopandas_to_ee(
+    gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/" + shp)
+)
+    for shp in shapefiles
+]
+
 startYear = 2021
 endYear = 2023
 
 years = np.arange(startYear, endYear)
+# GEE does not accept int64 so we convert it to python native int
+years = [int(year) for year in years]
 # -
 
 # # Download CDL data
@@ -989,28 +999,28 @@ from functools import reduce
 L8T1 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
 L7T1 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2")
 
-L8_2122 = (
+L8 = (
     L8T1.filter(ee.Filter.calendarRange(startYear, endYear, "year"))
     .map(lambda img: img.set("year", img.date().get("year")))
     .map(lambda img: img.clip(geometry))
 )
 
-L7_2122 = (
+L7 = (
     L7T1.filter(ee.Filter.calendarRange(startYear, endYear, "year"))
     .map(lambda img: img.set("year", img.date().get("year")))
     .map(lambda img: img.clip(geometry))
 )
 
 # Apply scaling factor
-L8_2122 = L8_2122.map(applyScaleFactors)
-L7_2122 = L7_2122.map(applyScaleFactors)
+L8 = L8.map(applyScaleFactors)
+L7 = L7.map(applyScaleFactors)
 
 # Rename bands
-L8_2122 = L8_2122.map(renameBandsL8)
-L7_2122 = L7_2122.map(renameBandsL7)
+L8 = L8.map(renameBandsL8)
+L7 = L7.map(renameBandsL7)
 
 # Merge Landsat 7 and 8 collections
-landSat_7_8 = ee.ImageCollection(L8_2122.merge(L7_2122))
+landSat_7_8 = ee.ImageCollection(L8.merge(L7))
 
 # Apply NDVI mask
 landSat_7_8 = landSat_7_8.map(addNDVI)
@@ -1059,17 +1069,13 @@ landSat_7_8 = (
 # Create a list of lists of imageCollections. Each year would have n number
 # of imageCollection corresponding to the time periods specified
 # for creating metric composites.
-yearlyCollectionsList = []
-for y in years:
-  yearlyCollectionsList = yearlyCollectionsList + \
-  [groupImages(y, landSat_7_8, geometry)]  # 'yearlyCollectionsList' is a Python list
-# yearlyCollectionsList[0][0]
+yearlyCollectionsList = [groupImages(y, landSat_7_8, geometry) for y in years]
 
 # Clip each collection to the WSDA field boundaries
 clipped_mainBands_CollectionList = list(map(
   lambda collList, shp: list(map(
     lambda collection: ee.ImageCollection(collection).map(
-      lambda img: img.clip(ee.FeatureCollection(shp))), collList)),
+      lambda img: ee.Image(img).clip(shp)), collList)),
         yearlyCollectionsList, shpfilesList))
 
 # Extract GLCM metrics
@@ -1108,7 +1114,7 @@ reducedList_glcmBands = list(map(
 # The bands are identical for all years so we use the first year
 #  imageCollection, [0]
 # Main bands:
-nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
+nameLists = list(map(lambda img: img.bandNames().getInfo(),
                       mainBands_percentile_collectionList[0]))
 mainBands = [name for sublist in nameLists for name in sublist]
 
@@ -1143,6 +1149,50 @@ Landsat_metricBased_list = list(map(
 
 print(Landsat_metricBased_list[0].shape)
 print(Landsat_metricBased_list[1].shape)
+
+# +
+# Merge main and glcm bands for each year
+allYears_metricBased_list = list(
+    map(
+        lambda mainband_df, glcmband_df: pd.concat([mainband_df, glcmband_df], axis=1),
+        metricBased_dataframeList_mainBands,
+        metricBased_dataframeList_glcm,
+    )
+)
+
+# Remove duplicated columns
+duplicated_cols_idx = [df.columns.duplicated() for df in allYears_metricBased_list]
+Landsat_metricBased_list = list(
+    map(
+        lambda df, dup_idx: df.iloc[:, ~dup_idx],
+        allYears_metricBased_list,
+        duplicated_cols_idx,
+    )
+)
+
+print(Landsat_metricBased_list[0].shape)
+print(Landsat_metricBased_list[1].shape)
+
+# +
+# clipped_mainBands_CollectionList[0][0][0]
+
+# # Select a single image from the collection (e.g., the median composite)
+# image = clipped_mainBands_CollectionList[0][0][0].median()
+# Map = geemap.Map(center=(40, -100), zoom=4)
+# # Define visualization parameters
+# vis_params = {
+#     "bands": ["B_S0"],  # RGB bands
+#     "min": 0,
+#     "max": 0.3,
+#     "gamma": 1,
+# }
+
+# # Add the image layer to the map
+# Map.addLayer(image, vis_params, "Landsat 8")
+
+# # Display the map
+# Map.addLayerControl()  # Add a layer control panel to the map
+# Map
 # -
 
 # # Download Season-Based Sentinel-1 Data
