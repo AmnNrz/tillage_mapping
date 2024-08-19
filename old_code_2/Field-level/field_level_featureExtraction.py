@@ -480,7 +480,7 @@ def eefeatureColl_to_Pandas_S1(yearlyList, bandNames, important_columns_names):
     for j in range(year_i.length().getInfo()):
       f_j = year_i.get(j)  # Jth featureCollection (reduced composite data)
       # Convert featureCollection to pandas dataframe
-      df_j = eefeaturecoll_to_pandas_manual(ee.FeatureCollection(f_j))
+      df_j = geemap.ee_to_geopandas(ee.FeatureCollection(f_j))
       df_j = df_j[df_j.columns[(df_j.columns).isin(
           important_columns)]]   # Pick needed columns
       df_yi = pd.concat([df_yi, df_j], axis=1)
@@ -1319,9 +1319,46 @@ from functools import reduce
 ###########################################################################
 ###################      Distribution-based Features      #################
 ###########################################################################
-# Create a list of lists of imageCollections. Each year would have n number 
+# Create a list of lists of imageCollections. Each year would have n number
 # of imageCollection corresponding to the time periods specified
 # for creating metric composites.
+Sentinel_1 = ee.ImageCollection("COPERNICUS/S1_GRD") \
+    .filter(ee.Filter.calendarRange(startYear, endYear, 'year')) \
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
+    .filter(ee.Filter.eq('instrumentMode', 'IW')) \
+    .map(lambda img: img.set('year', img.date().get('year')))\
+    .map(lambda img: img.clip(geometry))
+
+# Convert pixel values to logarithmic scale (decible scale)
+def toDb(img):
+
+    dB = ee.Image(10.0).multiply(img.log10()).toFloat()
+    # Rename the bands for VV and VH
+    bands = img.bandNames();
+    newBands = bands.map(lambda band: ee.String(band).cat('_dB'))
+
+    # Add dB bands and rename them
+    imageWithDb = img.addBands(dB)
+    renamedImage = imageWithDb.select(bands, newBands)
+
+    return renamedImage
+
+
+# Apply preprocessing and visualization
+processedCollection = Sentinel_1 \
+.map(toDb) \
+.map(lambda img: img.select(['VV_dB', 'VH_dB']))
+
+# # Display on map
+# Map = geemap.Map(center=[46.94, -117.100], zoom=7)
+# Map.addLayer(processedCollection, {
+#              'bands': ['VV_dB', 'VH_dB'], 'min': -20, 'max': 0}, 'Sentinel-1')
+# Map
+
+# Specify time period
+years = list(range(startYear, endYear))
+
 yearlyCollectionsList = []
 for y in years:
   yearlyCollectionsList = yearlyCollectionsList + \
@@ -1379,7 +1416,7 @@ nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
                       glcmBands_percentile_collectionList[0]))
 glcmBands = [name for sublist in nameLists for name in sublist]
 
-# Convert each year's composites to a single dataframe 
+# Convert each year's composites to a single dataframe
 # and put all the dataframes in a list a dataframe.
 
 important_columns_names = ['pointID', 'CurrentCro', 'DateTime', 'PriorCropT', 
@@ -1405,9 +1442,7 @@ Sentinel_1_metricBased_list = list(map(
 
 print(Sentinel_1_metricBased_list[0].shape)
 print(Sentinel_1_metricBased_list[1].shape)
-
 # -
 
-yearly_dfs_season = merge_cdl(Landsat_seasonBased_list, cdl_list)
-yearly_dfs_metric = merge_cdl(Landsat_metricBased_list, cdl_list)
+Sentinel_1_metricBased_list
 
