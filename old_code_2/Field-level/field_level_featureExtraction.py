@@ -809,7 +809,6 @@ def processInBatches(image, polygonsList, batch_size, file_name):
             f"{file_name}" + f"histogram_export_batch_{i+1}",
             "CDL_data",
         )
-        print(batch_df)
         cdl_df = pd.concat([cdl_df, batch_df])
     return cdl_df
 
@@ -839,11 +838,13 @@ for year, shapefile, shpfile_name in zip(years, geopandas_list, shapefile_names)
     file_name = shapefile_name + f"{year}"
     cdl_list.append(cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name))
 
+cdl_df = pd.DataFrame()
 for df in cdl_list:
     df["most_frequent_crop"] = df["cropland"].apply(find_most_requesnt_crop)
-# -
+    cdl_df = pd.concat([cdl_df, df[["pointID", "most_frequent_crop"]]])
 
-cdl_list[0]
+cdl_df.to_csv(path_to_data + "field_level_data/FINAL_DATA/cdl_df.csv")
+cdl_df.head(5)
 
 # + [markdown] id="DUhdHR8xIrUE"
 # # Download Metric-Based Landsat Data
@@ -1005,8 +1006,17 @@ glcmBands = [name for sublist in nameLists for name in sublist]
 # Convert each year's composites to a single dataframe
 # and put all the dataframes in a list a dataframe.
 
-important_columns_names = ['pointID', 'CurrentCro', 'DateTime', 'PriorCropT',
-                           'ResidueCov', 'Tillage', 'WhereInRan']
+important_columns_names = [
+    "pointID",
+    "CurrentCro",
+    "DateTime",
+    "PriorCropT",
+    "ResidueCov",
+    "Tillage",
+    "WhereInRan",
+    "ExactAcres",
+    "County"
+]
 
 metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas(
   reducedList_mainBands, mainBands, important_columns_names)
@@ -1149,8 +1159,17 @@ glcmBands = [name for sublist in nameLists for name in sublist]
 # Convert each year's composites to a single dataframe
 # and put all the dataframes in a list a dataframe.
 
-important_columns_names = ['pointID', 'CurrentCro', 'DateTime', 'PriorCropT', 
-                           'ResidueCov', 'Tillage', 'WhereInRan']
+important_columns_names = [
+    "pointID",
+    "CurrentCro",
+    "DateTime",
+    "PriorCropT",
+    "ResidueCov",
+    "Tillage",
+    "WhereInRan",
+    "ExactAcres",
+    "County"
+]
 
 metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas_S1(
   reducedList_mainBands, mainBands, important_columns_names)
@@ -1184,5 +1203,3 @@ Sentinel_1_metricBased_df.to_csv(
 Landsat_metricBased_df.to_csv(
     path_to_data + "field_level_data/FINAL_DATA/Landsat_metricBased.csv"
 )
-
-Landsat_metricBased_df
