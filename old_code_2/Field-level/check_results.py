@@ -621,9 +621,20 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedShuffleSplit, GridSearchCV
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import classification_report
 from sklearn.preprocessing import StandardScaler
 from collections import defaultdict, Counter
+from sklearn.base import BaseEstimator, ClassifierMixin
+import matplotlib.pyplot as plt
+from sklearn.metrics import (
+    accuracy_score,
+    make_scorer,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+)
+from sklearn.model_selection import cross_val_score
+# Custom scoring function for micro and macro averages
+from sklearn.metrics import f1_score
 
 scaler = StandardScaler()
 
@@ -679,10 +690,12 @@ for train_index, test_index in sss.split(X_valid, stratify_column_valid):
     X_train, X_test = X_valid.iloc[train_index], X_valid.iloc[test_index]
     y_train, y_test = y_valid.iloc[train_index], y_valid.iloc[test_index]
 
-# +
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.ensemble import RandomForestClassifier
+# Remove cdl crop type column
+X_train_nocrop = X_train.drop("cdl_cropType", axis=1)
+X_test_nocrop = X_test.drop("cdl_cropType", axis=1)
 
+
+# +
 # Custom weight formula function
 def calculate_custom_weights(y, a):
     unique_classes, class_counts = np.unique(y, return_counts=True)
@@ -692,12 +705,18 @@ def calculate_custom_weights(y, a):
         weight_dict[cls] = (1 / cnt) ** a / sum_weight
     return weight_dict
 
-
 class CustomWeightedRF(BaseEstimator, ClassifierMixin):
     def __init__(
-            self, n_estimators=100, max_depth=None,
-              a=1, max_features=None, min_samples_split=None,
-              min_samples_leaf=None, bootstrap=None, **kwargs):
+        self,
+        n_estimators=100,
+        max_depth=None,
+        a=1,
+        max_features=None,
+        min_samples_split=None,
+        min_samples_leaf=None,
+        bootstrap=None,
+        **kwargs,
+    ):
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.max_features = max_features
@@ -710,20 +729,29 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         )
 
     def fit(self, X, y, **kwargs):
+        # Calculate the target weights based on 'a'
         target_weights_dict = calculate_custom_weights(y, self.a)
         target_weights = np.array([target_weights_dict[sample] for sample in y])
 
-        # Rest of the weight calculation can stay same
-        feature_cols = ["cdl_cropType"]
-        feature_weights = np.zeros(X.shape[0])
-        for col in feature_cols:
-            feature_weights_dict = calculate_custom_weights(X[col].values, self.a)
-            feature_weights += X[col].map(feature_weights_dict).values
+        # If a == 0, remove "cdl_cropType" from the dataset
+        if self.a == 0:
+            X_mod = X.drop(columns=["cdl_cropType"])
+            feature_weights = np.ones(X_mod.shape[0])  # No feature weights in this case
+        else:
+            X_mod = X.copy()
+            feature_cols = ["cdl_cropType"]
+            feature_weights = np.zeros(X_mod.shape[0])
+            for col in feature_cols:
+                feature_weights_dict = calculate_custom_weights(
+                    X_mod[col].values, self.a
+                )
+                feature_weights += X_mod[col].map(feature_weights_dict).values
 
+        # Calculate sample weights by combining target and feature weights
         sample_weights = target_weights * feature_weights
 
-        # Now fit the RandomForestClassifier with the computed weights
-        self.rf.fit(X, y, sample_weight=sample_weights)
+        # Fit the RandomForestClassifier with the computed weights and modified dataset
+        self.rf.fit(X_mod, y, sample_weight=sample_weights)
 
         # Set the classes_ attribute
         self.classes_ = self.rf.classes_
@@ -731,25 +759,155 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X, **kwargs):
-        return self.rf.predict(X)
+        if self.a == 0:
+            X_mod = X.drop(columns=["cdl_cropType"])
+        else:
+            X_mod = X.copy()
+        return self.rf.predict(X_mod)
 
     def predict_proba(self, X, **kwargs):
-        return self.rf.predict_proba(X)
+        if self.a == 0:
+            X_mod = X.drop(columns=["cdl_cropType"])
+        else:
+            X_mod = X.copy()
+        return self.rf.predict_proba(X_mod)
 
     @property
     def feature_importances_(self):
         return self.rf.feature_importances_
 
 
+def train_model(X_train, y_train, X_test, y_test, cv, param_grid, classifier):
+    # Define custom micro and macro scoring
+    scoring = {
+        "micro_accuracy": make_scorer(f1_score, average="micro"),
+        "macro_accuracy": make_scorer(f1_score, average="macro"),
+    }
+
+    # Perform grid search with cross-validation
+    grid_search = GridSearchCV(
+        classifier,
+        param_grid,
+        cv=3,
+        scoring=scoring,
+        refit="micro_accuracy",
+        return_train_score=False,
+    )
+    grid_search.fit(X_train, y_train)
+    return grid_search
+
+def plot_val_scores(grid_search, X_test, y_test):
+    
+    # Extracting cross-validation results
+    cv_results = grid_search.cv_results_
+
+    # Extract the validation accuracies for micro and macro scores
+    micro_accuracies = cv_results["mean_test_micro_accuracy"]
+    macro_accuracies = cv_results["mean_test_macro_accuracy"]
+
+    # Create a box plot of micro and macro accuracies
+    plt.figure(figsize=(10, 6))
+    plt.boxplot(
+        [micro_accuracies, macro_accuracies], labels=["Micro Accuracy", "Macro Accuracy"]
+    )
+    plt.title("Micro and Macro Averaged Validation Accuracies")
+    plt.ylabel("Accuracy")
+    plt.show()
+
+    # Get the best model and test its accuracy on the test set
+    best_model = grid_search.best_estimator_
+    test_accuracy = accuracy_score(y_test, best_model.predict(X_test))
+
+    print(f"Best model test accuracy: {test_accuracy}")
+
+    # Plot the confusion matrix for the best model on the test set
+    conf_matrix = confusion_matrix(y_test, best_model.predict(X_test))
+    ConfusionMatrixDisplay(conf_matrix).plot()
+    plt.title("Confusion Matrix for the Best Model")
+    plt.show()
+
+
+# +
 param_grid = {
     "n_estimators": [50, 100, 300],
     "max_features": ["log2", "sqrt"],
     "max_depth": [5, 40, 55],
     "min_samples_split": [2, 5, 10],
     "min_samples_leaf": [1, 2, 4],
-    "a": list(np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3)))),
-    "bootstrap": [True, False]
+    "a": list(
+        np.around(
+            np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3))), decimals=1
+        )
+    ),
+    # "a":[0],
+    "bootstrap": [True, False],
 }
+
+grid_search = train_model(
+    X_train, y_train, X_test, y_test, 3, param_grid, CustomWeightedRF()
+)
+# plot_val_scores(grid_search, X_test_nocrop, y_test)
+
+# +
+def plot_val_scores_by_a(grid_search, param_grid, X_test, y_test):
+    # Extract cross-validation results
+    cv_results = grid_search.cv_results_
+
+    # Get the `a` values and the corresponding validation accuracies
+    a_values = param_grid["a"]
+    accuracies_by_a = {a: [] for a in a_values}
+
+    # Collect accuracies for each `a` value from cv_results
+    for i, a in enumerate(cv_results["param_a"]):
+        accuracies_by_a[a].append(cv_results["mean_test_micro_accuracy"][i])
+
+    # Create box plots for each `a` value
+    plt.figure(figsize=(10, 6))
+    box_data = [accuracies_by_a[a] for a in a_values]
+    plt.boxplot(box_data, labels=[str(a) for a in a_values])
+
+    # Calculate mean validation accuracy for each `a` value and plot a line
+    mean_accuracies = [np.mean(accuracies_by_a[a]) for a in a_values]
+    plt.plot(
+        range(1, len(a_values) + 1),
+        mean_accuracies,
+        marker="o",
+        linestyle="--",
+        color="r",
+        label="Mean Accuracy",
+    )
+
+    # Add titles and labels
+    plt.title("Validation Accuracies Across Different 'a' Values")
+    plt.xlabel("a values")
+    plt.ylabel("Micro F1 Accuracy")
+    plt.legend()
+    plt.show()
+
+    # Get the best model and test its accuracy on the test set
+    best_model = grid_search.best_estimator_
+
+    # If `a == 0`, remove "cdl_cropType" from the test set
+    if best_model.a == 0:
+        X_test_mod = X_test.drop(columns=["cdl_cropType"])
+    else:
+        X_test_mod = X_test.copy()
+
+    # Test the accuracy of the best model
+    test_accuracy = accuracy_score(y_test, best_model.predict(X_test_mod))
+    print(f"Best model test accuracy: {test_accuracy}")
+
+    # Plot the confusion matrix for the best model on the test set
+    conf_matrix = confusion_matrix(y_test, best_model.predict(X_test_mod))
+    ConfusionMatrixDisplay(conf_matrix).plot()
+    plt.title("Confusion Matrix for the Best Model")
+    plt.show()
+
+
+plot_val_scores_by_a(grid_search, param_grid, X_test, y_test)
+# -
+
+# # check for correctly classified frequencies
 
 # +
 import numpy as np
@@ -760,49 +918,95 @@ from sklearn.metrics import (
     confusion_matrix,
     ConfusionMatrixDisplay,
 )
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.metrics import f1_score
+from collections import defaultdict
 
 # Custom scoring function for micro and macro averages
-from sklearn.metrics import f1_score
-
-# Define custom micro and macro scoring
 scoring = {
     "micro_accuracy": make_scorer(f1_score, average="micro"),
     "macro_accuracy": make_scorer(f1_score, average="macro"),
 }
 
-# Perform grid search with cross-validation
-grid_search = GridSearchCV(
-    CustomWeightedRF(),
-    param_grid,
-    cv=3,
-    scoring=scoring,
-    refit="micro_accuracy",
-    return_train_score=False,
-)
-grid_search.fit(X_train, y_train)
+# Number of cross-validation loops
+n_loops = 5
 
-# Extracting cross-validation results
-cv_results = grid_search.cv_results_
+# **Changes here**: Define a larger dictionary to store frequencies of correct classifications across folds and loops
+correct_classification_freq_val = defaultdict(int)
+correct_classification_freq_test = defaultdict(int)
 
-# Extract the validation accuracies for micro and macro scores
-micro_accuracies = cv_results["mean_test_micro_accuracy"]
-macro_accuracies = cv_results["mean_test_macro_accuracy"]
+# StratifiedKFold to maintain class distribution across folds
+cv = StratifiedKFold(n_splits=3)
+
+for loop in range(n_loops):  # Iterate across loops
+    print(f"Running loop {loop + 1}/{n_loops}")
+
+    # Perform grid search with cross-validation
+    grid_search = GridSearchCV(
+        CustomWeightedRF(),
+        param_grid,
+        cv=cv,
+        scoring=scoring,
+        refit="micro_accuracy",
+        return_train_score=False,
+    )
+
+    grid_search.fit(X_train, y_train)  # Fit the model for this loop
+
+    # Get the best model from grid search
+    best_model = grid_search.best_estimator_
+
+    # **Change 1 here**: Track correct classifications for validation data across folds
+    for train_idx, val_idx in cv.split(X_train, y_train):
+        val_preds = best_model.predict(X_train.iloc[val_idx])
+        correct_val = (
+            val_preds == y_train.iloc[val_idx]
+        )  # This tracks correct validation classifications
+
+        for idx, correct in zip(val_idx, correct_val):  # Zip over index to accumulate
+            if correct:
+                # **Change 2 here**: Increment for each fold, across all loops
+                correct_classification_freq_val[
+                    X_train.index[idx]
+                ] += 1  # Accumulating across all loops and folds
+
+    # Test set accuracy tracking for each loop
+    test_preds = best_model.predict(X_test)
+    correct_test = test_preds == y_test
+
+    for idx, correct in zip(X_test.index, correct_test):
+        if correct:
+            # **Change 3 here**: Increment for test set across all loops
+            correct_classification_freq_test[idx] += 1  # Increment across loops
 
 # Create a box plot of micro and macro accuracies
 plt.figure(figsize=(10, 6))
 plt.boxplot(
-    [micro_accuracies, macro_accuracies], labels=["Micro Accuracy", "Macro Accuracy"]
+    [
+        grid_search.cv_results_["mean_test_micro_accuracy"],
+        grid_search.cv_results_["mean_test_macro_accuracy"],
+    ],
+    labels=["Micro Accuracy", "Macro Accuracy"],
 )
 plt.title("Micro and Macro Averaged Validation Accuracies")
 plt.ylabel("Accuracy")
 plt.show()
 
-# Get the best model and test its accuracy on the test set
-best_model = grid_search.best_estimator_
-test_accuracy = accuracy_score(y_test, best_model.predict(X_test))
+# Print the frequency of correctly classified instances for validation and test sets
+print("Correct classification frequencies in validation folds:")
+for idx, count in correct_classification_freq_val.items():
+    print(
+        f"Instance {idx}: Correctly classified {count} times"
+    )  # Printing frequencies for all instances
 
+print("Correct classification frequencies in the test set:")
+for idx, count in correct_classification_freq_test.items():
+    print(
+        f"Instance {idx}: Correctly classified {count} times"
+    )  # Printing test set results
+
+# Test set accuracy
+test_accuracy = accuracy_score(y_test, best_model.predict(X_test))
 print(f"Best model test accuracy: {test_accuracy}")
 
 # Plot the confusion matrix for the best model on the test set
@@ -810,3 +1014,29 @@ conf_matrix = confusion_matrix(y_test, best_model.predict(X_test))
 ConfusionMatrixDisplay(conf_matrix).plot()
 plt.title("Confusion Matrix for the Best Model")
 plt.show()
+
+# +
+# Get feature importances from the best model
+feature_importances = best_model.feature_importances_
+
+# Create a sorted list of features and their importance
+important_features = sorted(
+    zip(X_train.columns, feature_importances), key=lambda x: x[1], reverse=True
+)
+
+# Print the most important features and their importances
+print("Feature importances:")
+for feature, importance in important_features:
+    print(f"{feature}: {importance:.4f}")
+
+# Optionally, plot the feature importances
+plt.figure(figsize=(10, 6))
+plt.barh([x[0] for x in important_features], [x[1] for x in important_features])
+plt.title("Feature Importances")
+plt.xlabel("Importance")
+plt.ylabel("Feature")
+plt.gca().invert_yaxis()  # Invert y-axis to have the most important feature on top
+plt.show()
+# -
+
+lsat_data['cdl_cropType'].value_counts()
