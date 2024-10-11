@@ -1,0 +1,301 @@
+
+--- We are now in /home/a.norouzikandelati/Projects/Tillage_mapping/codes/qsubs ...
+
+--------- environment ---------
+--------- where am i  ---------
+WORKDIR:
+HOMEDIR:
+Running time on host cn120
+Time is Thu Sep 26 09:56:26 PM PDT 2024
+Directory is /home/a.norouzikandelati/Projects/Tillage_mapping/codes/qsubs
+--------- continue on ---------
+field_count = 32851
+(31, 20)
+field_count = 35071
+(34, 16)
+field_count = 66149
+(65, 14)
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1PGtFxtnqMS8SxEJS04J7C8nhdYFqljOI): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1PGtFxtnqMS8SxEJS04J7C8nhdYFqljOI? returned "File not found: 1PGtFxtnqMS8SxEJS04J7C8nhdYFqljOI.". Details: "[{'message': 'File not found: 1PGtFxtnqMS8SxEJS04J7C8nhdYFqljOI.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1aNks4HnI3gB7MhQjSxYA5qEWxJyiqesf): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1aNks4HnI3gB7MhQjSxYA5qEWxJyiqesf? returned "File not found: 1aNks4HnI3gB7MhQjSxYA5qEWxJyiqesf.". Details: "[{'message': 'File not found: 1aNks4HnI3gB7MhQjSxYA5qEWxJyiqesf.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 16XNP_rtBMwQLF91lAH5A838p5mHi9HgH): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/16XNP_rtBMwQLF91lAH5A838p5mHi9HgH? returned "File not found: 16XNP_rtBMwQLF91lAH5A838p5mHi9HgH.". Details: "[{'message': 'File not found: 16XNP_rtBMwQLF91lAH5A838p5mHi9HgH.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1yeF8ZzHZHjfQNcPd1e3aLOg6y39JXjun): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1yeF8ZzHZHjfQNcPd1e3aLOg6y39JXjun? returned "File not found: 1yeF8ZzHZHjfQNcPd1e3aLOg6y39JXjun.". Details: "[{'message': 'File not found: 1yeF8ZzHZHjfQNcPd1e3aLOg6y39JXjun.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1udpqnfYKM1L_SlLE0G3gtNJxuW101kVS): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1udpqnfYKM1L_SlLE0G3gtNJxuW101kVS? returned "File not found: 1udpqnfYKM1L_SlLE0G3gtNJxuW101kVS.". Details: "[{'message': 'File not found: 1udpqnfYKM1L_SlLE0G3gtNJxuW101kVS.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1oE3Z5ZQ2ECA1FtyRSze6SU5rCFJ6Zju-): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1oE3Z5ZQ2ECA1FtyRSze6SU5rCFJ6Zju-? returned "File not found: 1oE3Z5ZQ2ECA1FtyRSze6SU5rCFJ6Zju-.". Details: "[{'message': 'File not found: 1oE3Z5ZQ2ECA1FtyRSze6SU5rCFJ6Zju-.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1JYTb5u12FzNGNsSBsv4ebAW6PI-T_2sN): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1JYTb5u12FzNGNsSBsv4ebAW6PI-T_2sN? returned "File not found: 1JYTb5u12FzNGNsSBsv4ebAW6PI-T_2sN.". Details: "[{'message': 'File not found: 1JYTb5u12FzNGNsSBsv4ebAW6PI-T_2sN.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1DtiLxmULzc9R4qYGtgK_Z_QgsMX_YGTx): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1DtiLxmULzc9R4qYGtgK_Z_QgsMX_YGTx? returned "File not found: 1DtiLxmULzc9R4qYGtgK_Z_QgsMX_YGTx.". Details: "[{'message': 'File not found: 1DtiLxmULzc9R4qYGtgK_Z_QgsMX_YGTx.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1lwwEZD_lVusU9T47vhGsBmU4iQDnRvBl): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1lwwEZD_lVusU9T47vhGsBmU4iQDnRvBl? returned "File not found: 1lwwEZD_lVusU9T47vhGsBmU4iQDnRvBl.". Details: "[{'message': 'File not found: 1lwwEZD_lVusU9T47vhGsBmU4iQDnRvBl.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1M-X-r9nBHRzzV38Uy1dKBFs1nY333xvC): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1M-X-r9nBHRzzV38Uy1dKBFs1nY333xvC? returned "File not found: 1M-X-r9nBHRzzV38Uy1dKBFs1nY333xvC.". Details: "[{'message': 'File not found: 1M-X-r9nBHRzzV38Uy1dKBFs1nY333xvC.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1EIrjOdbfyE37EBM4eNGw9ZJLzBHhGWAf): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1EIrjOdbfyE37EBM4eNGw9ZJLzBHhGWAf? returned "File not found: 1EIrjOdbfyE37EBM4eNGw9ZJLzBHhGWAf.". Details: "[{'message': 'File not found: 1EIrjOdbfyE37EBM4eNGw9ZJLzBHhGWAf.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1I-b41km5t_Ik_jG14Qza0fj9DD-uC5_H): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1I-b41km5t_Ik_jG14Qza0fj9DD-uC5_H? returned "File not found: 1I-b41km5t_Ik_jG14Qza0fj9DD-uC5_H.". Details: "[{'message': 'File not found: 1I-b41km5t_Ik_jG14Qza0fj9DD-uC5_H.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1eHMZwJu3HoK24RBQ8H_xZLl9PW4ow9aN): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1eHMZwJu3HoK24RBQ8H_xZLl9PW4ow9aN? returned "File not found: 1eHMZwJu3HoK24RBQ8H_xZLl9PW4ow9aN.". Details: "[{'message': 'File not found: 1eHMZwJu3HoK24RBQ8H_xZLl9PW4ow9aN.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 13mTVyAxP3yajjarYnQcZsuF2JtoGmkzd): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/13mTVyAxP3yajjarYnQcZsuF2JtoGmkzd? returned "File not found: 13mTVyAxP3yajjarYnQcZsuF2JtoGmkzd.". Details: "[{'message': 'File not found: 13mTVyAxP3yajjarYnQcZsuF2JtoGmkzd.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1qvipKH8cwxCSGO69jHXaMeTSk-C80nJK): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1qvipKH8cwxCSGO69jHXaMeTSk-C80nJK? returned "File not found: 1qvipKH8cwxCSGO69jHXaMeTSk-C80nJK.". Details: "[{'message': 'File not found: 1qvipKH8cwxCSGO69jHXaMeTSk-C80nJK.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1TH7pamY9MpCVzr-kHGoqIaBXLy6iziL4): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1TH7pamY9MpCVzr-kHGoqIaBXLy6iziL4? returned "File not found: 1TH7pamY9MpCVzr-kHGoqIaBXLy6iziL4.". Details: "[{'message': 'File not found: 1TH7pamY9MpCVzr-kHGoqIaBXLy6iziL4.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1zG0CTnoSiMfMldLntJV3jFncSkn_tVs7): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1zG0CTnoSiMfMldLntJV3jFncSkn_tVs7? returned "File not found: 1zG0CTnoSiMfMldLntJV3jFncSkn_tVs7.". Details: "[{'message': 'File not found: 1zG0CTnoSiMfMldLntJV3jFncSkn_tVs7.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 11ZjiOFC0BwNZXnpLxTOI8tHzq5xVqhSl): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/11ZjiOFC0BwNZXnpLxTOI8tHzq5xVqhSl? returned "File not found: 11ZjiOFC0BwNZXnpLxTOI8tHzq5xVqhSl.". Details: "[{'message': 'File not found: 11ZjiOFC0BwNZXnpLxTOI8tHzq5xVqhSl.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1nfnNFs11fi_iDD1dmpH8TrHW6q68NE8F): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1nfnNFs11fi_iDD1dmpH8TrHW6q68NE8F? returned "File not found: 1nfnNFs11fi_iDD1dmpH8TrHW6q68NE8F.". Details: "[{'message': 'File not found: 1nfnNFs11fi_iDD1dmpH8TrHW6q68NE8F.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1in8gpIvLbf7vX41co3PfXvNAFRPCcj-u): <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1in8gpIvLbf7vX41co3PfXvNAFRPCcj-u? returned "User rate limit exceeded.". Details: "[{'message': 'User rate limit exceeded.', 'domain': 'usageLimits', 'reason': 'userRateLimitExceeded'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1ebtQw4jrHRLfgj7fgfsla_8NTuA0QGqi): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1ebtQw4jrHRLfgj7fgfsla_8NTuA0QGqi? returned "File not found: 1ebtQw4jrHRLfgj7fgfsla_8NTuA0QGqi.". Details: "[{'message': 'File not found: 1ebtQw4jrHRLfgj7fgfsla_8NTuA0QGqi.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1UGatVQduQIk8ur7GwYhJ9yGLZKag6-uM): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1UGatVQduQIk8ur7GwYhJ9yGLZKag6-uM? returned "File not found: 1UGatVQduQIk8ur7GwYhJ9yGLZKag6-uM.". Details: "[{'message': 'File not found: 1UGatVQduQIk8ur7GwYhJ9yGLZKag6-uM.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1xSHsQyeFv3TkfkuJ1nvHDrl0e0t1--ZP): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1xSHsQyeFv3TkfkuJ1nvHDrl0e0t1--ZP? returned "File not found: 1xSHsQyeFv3TkfkuJ1nvHDrl0e0t1--ZP.". Details: "[{'message': 'File not found: 1xSHsQyeFv3TkfkuJ1nvHDrl0e0t1--ZP.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 18fenViDIdbxwCKUdXrN0eoTHLLwfEFG9): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/18fenViDIdbxwCKUdXrN0eoTHLLwfEFG9? returned "File not found: 18fenViDIdbxwCKUdXrN0eoTHLLwfEFG9.". Details: "[{'message': 'File not found: 18fenViDIdbxwCKUdXrN0eoTHLLwfEFG9.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1q2tYPC0wnaeV4tbL964SWnWt10-3faf1): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1q2tYPC0wnaeV4tbL964SWnWt10-3faf1? returned "File not found: 1q2tYPC0wnaeV4tbL964SWnWt10-3faf1.". Details: "[{'message': 'File not found: 1q2tYPC0wnaeV4tbL964SWnWt10-3faf1.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 151sVuCJ4m4T-QiQ12IJ7wOQMt0ZE4nCP): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/151sVuCJ4m4T-QiQ12IJ7wOQMt0ZE4nCP? returned "File not found: 151sVuCJ4m4T-QiQ12IJ7wOQMt0ZE4nCP.". Details: "[{'message': 'File not found: 151sVuCJ4m4T-QiQ12IJ7wOQMt0ZE4nCP.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1EvO3ZaHKZorzPxoAwkktut89LV5p5ask): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1EvO3ZaHKZorzPxoAwkktut89LV5p5ask? returned "File not found: 1EvO3ZaHKZorzPxoAwkktut89LV5p5ask.". Details: "[{'message': 'File not found: 1EvO3ZaHKZorzPxoAwkktut89LV5p5ask.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1pjDKeMYDKyLIZu-lOUyf7tdLEOQe1DQp): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1pjDKeMYDKyLIZu-lOUyf7tdLEOQe1DQp? returned "File not found: 1pjDKeMYDKyLIZu-lOUyf7tdLEOQe1DQp.". Details: "[{'message': 'File not found: 1pjDKeMYDKyLIZu-lOUyf7tdLEOQe1DQp.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1d1B1o1JTiU6rgzaFULvRRONrOdWlsbc1): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1d1B1o1JTiU6rgzaFULvRRONrOdWlsbc1? returned "File not found: 1d1B1o1JTiU6rgzaFULvRRONrOdWlsbc1.". Details: "[{'message': 'File not found: 1d1B1o1JTiU6rgzaFULvRRONrOdWlsbc1.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1iNZ4hU6m925uYtf6GPQ7SkeDDrBVEozE): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1iNZ4hU6m925uYtf6GPQ7SkeDDrBVEozE? returned "File not found: 1iNZ4hU6m925uYtf6GPQ7SkeDDrBVEozE.". Details: "[{'message': 'File not found: 1iNZ4hU6m925uYtf6GPQ7SkeDDrBVEozE.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1Xu0oQh4n5Gu2thm2O6N3NiVTUW8em6YI): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1Xu0oQh4n5Gu2thm2O6N3NiVTUW8em6YI? returned "File not found: 1Xu0oQh4n5Gu2thm2O6N3NiVTUW8em6YI.". Details: "[{'message': 'File not found: 1Xu0oQh4n5Gu2thm2O6N3NiVTUW8em6YI.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1GqHkWlpowHzJIxOWZuKsSm170uJ3TeEA): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1GqHkWlpowHzJIxOWZuKsSm170uJ3TeEA? returned "File not found: 1GqHkWlpowHzJIxOWZuKsSm170uJ3TeEA.". Details: "[{'message': 'File not found: 1GqHkWlpowHzJIxOWZuKsSm170uJ3TeEA.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1GN7WS7Zfe-5mcoY7GkkoYUr85kSmiRRf): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1GN7WS7Zfe-5mcoY7GkkoYUr85kSmiRRf? returned "File not found: 1GN7WS7Zfe-5mcoY7GkkoYUr85kSmiRRf.". Details: "[{'message': 'File not found: 1GN7WS7Zfe-5mcoY7GkkoYUr85kSmiRRf.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete WSDA_2012.shp2011histogram_export_batch_1.csv (ID: 1hOcNoKN0pSKWv_peJd7iLzv964hZDmlv): <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1hOcNoKN0pSKWv_peJd7iLzv964hZDmlv? returned "User rate limit exceeded.". Details: "[{'message': 'User rate limit exceeded.', 'domain': 'usageLimits', 'reason': 'userRateLimitExceeded'}]">
+Failed to delete CDL_data (ID: 1LqFcD0Ahm75J-KSE4Od0jZSwpAIFevFM): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1LqFcD0Ahm75J-KSE4Od0jZSwpAIFevFM? returned "File not found: 1LqFcD0Ahm75J-KSE4Od0jZSwpAIFevFM.". Details: "[{'message': 'File not found: 1LqFcD0Ahm75J-KSE4Od0jZSwpAIFevFM.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+Failed to delete doubleCropping_data (ID: 1aa0yaXU5TQXRb6H8RT5VTUfDxbR7bcYs): <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1aa0yaXU5TQXRb6H8RT5VTUfDxbR7bcYs? returned "The user does not have sufficient permissions for this file.". Details: "[{'message': 'The user does not have sufficient permissions for this file.', 'domain': 'global', 'reason': 'insufficientFilePermissions'}]">
+(0, 50)
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Polling for task (id: FP7FACQHB2ETFJ5ZA4CRMRV5).
+Export completed successfully!
+Download Complete
+Failed to delete file (ID: 1_afPcDCpB7v2gyXOhFAs6FxqQpauPt17): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1_afPcDCpB7v2gyXOhFAs6FxqQpauPt17? returned "File not found: 1_afPcDCpB7v2gyXOhFAs6FxqQpauPt17.". Details: "[{'message': 'File not found: 1_afPcDCpB7v2gyXOhFAs6FxqQpauPt17.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+(0, 50)
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Polling for task (id: JU5TQZAM5UJY3L4HJQ5QWPQL).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1LFiJxF1SBeP5qxtADxbHKlZJv3kDwYxp
+(0, 50)
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Polling for task (id: 4NVWFIKGD2QC3SZJVIIZO4ID).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1LSZ_53iuFExAwTwExqtCt4I21dcwoF18
+(50, 100)
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Polling for task (id: SVPRR4BVKJMIMJLYQS4J2FB4).
+Export completed successfully!
+Download Complete
+Failed to delete file (ID: 1NTW1cucJgKtOjqa1U2X6NVzP2peGUdzf): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1NTW1cucJgKtOjqa1U2X6NVzP2peGUdzf? returned "File not found: 1NTW1cucJgKtOjqa1U2X6NVzP2peGUdzf.". Details: "[{'message': 'File not found: 1NTW1cucJgKtOjqa1U2X6NVzP2peGUdzf.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+(31, 3428)
+(34, 3428)
+
+----- DONE -----
+

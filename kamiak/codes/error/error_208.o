@@ -1,0 +1,298 @@
+
+--- We are now in /home/a.norouzikandelati/Projects/Tillage_mapping/codes/qsubs ...
+
+--------- environment ---------
+--------- where am i  ---------
+WORKDIR:
+HOMEDIR:
+Running time on host cn139
+Time is Thu Sep 26 10:44:37 PM PDT 2024
+Directory is /home/a.norouzikandelati/Projects/Tillage_mapping/codes/qsubs
+--------- continue on ---------
+field_count = 32851
+(31, 20)
+field_count = 35071
+(34, 16)
+field_count = 66149
+(65, 14)
+Failed to delete doubleCropping_data (ID: 1aa0yaXU5TQXRb6H8RT5VTUfDxbR7bcYs): <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1aa0yaXU5TQXRb6H8RT5VTUfDxbR7bcYs? returned "The user does not have sufficient permissions for this file.". Details: "[{'message': 'The user does not have sufficient permissions for this file.', 'domain': 'global', 'reason': 'insufficientFilePermissions'}]">
+(0, 50)
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Polling for task (id: PRPZDIDX4RP55RJDFRPLOPUO).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1ZRQw_2RQ362-thJCFTckRmSGvE2alZim
+(0, 50)
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Polling for task (id: AJD5S5VKLPH5H2XSZ6UIG44F).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1G4JYYOO-lKsbFEfxCvYhogk1697him67
+(0, 50)
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Polling for task (id: TSM3K3326Y4TW2O4S34MGSFU).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1QirbUHEpByqQiFa4TzW7GzBbIaEGGN1p
+(50, 100)
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Polling for task (id: MW4VYLYI252JCHEM3FG7LQK5).
+Export completed successfully!
+Download Complete
+Failed to delete file (ID: 1kjK7WA2Gjtd2hDjVpWidqP0kA3mVagq0): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1kjK7WA2Gjtd2hDjVpWidqP0kA3mVagq0? returned "File not found: 1kjK7WA2Gjtd2hDjVpWidqP0kA3mVagq0.". Details: "[{'message': 'File not found: 1kjK7WA2Gjtd2hDjVpWidqP0kA3mVagq0.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+(31, 3428)
+(34, 3428)
+
+----- DONE -----
+

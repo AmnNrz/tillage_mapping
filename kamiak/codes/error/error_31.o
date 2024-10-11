@@ -1,0 +1,204 @@
+
+--- We are now in /home/a.norouzikandelati/Projects/Tillage_mapping/codes/qsubs ...
+
+--------- environment ---------
+--------- where am i  ---------
+WORKDIR:
+HOMEDIR:
+Running time on host cn139
+Time is Thu Sep 26 09:37:10 PM PDT 2024
+Directory is /home/a.norouzikandelati/Projects/Tillage_mapping/codes/qsubs
+--------- continue on ---------
+field_count = 32851
+(31, 20)
+field_count = 35071
+(34, 16)
+field_count = 66149
+(65, 14)
+Failed to delete doubleCropping_data (ID: 1aa0yaXU5TQXRb6H8RT5VTUfDxbR7bcYs): <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1aa0yaXU5TQXRb6H8RT5VTUfDxbR7bcYs? returned "The user does not have sufficient permissions for this file.". Details: "[{'message': 'The user does not have sufficient permissions for this file.', 'domain': 'global', 'reason': 'insufficientFilePermissions'}]">
+(0, 50)
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Polling for task (id: PHM5TJ5AETTPKYBHCG2DDPFU).
+Export completed successfully!
+Download Complete
+Failed to delete file (ID: 1BIoKxIR-jkTtHl9fN-Xln7pCyrKTTN42): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1BIoKxIR-jkTtHl9fN-Xln7pCyrKTTN42? returned "File not found: 1BIoKxIR-jkTtHl9fN-Xln7pCyrKTTN42.". Details: "[{'message': 'File not found: 1BIoKxIR-jkTtHl9fN-Xln7pCyrKTTN42.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+(0, 50)
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Polling for task (id: BGO2M6A5PAVYFX34WQL4EEPW).
+Export completed successfully!
+Download Complete
+Failed to delete file (ID: 1p2c3RsZUpN7CT8E05IIQrs60VSkFW4Ax): <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1p2c3RsZUpN7CT8E05IIQrs60VSkFW4Ax? returned "File not found: 1p2c3RsZUpN7CT8E05IIQrs60VSkFW4Ax.". Details: "[{'message': 'File not found: 1p2c3RsZUpN7CT8E05IIQrs60VSkFW4Ax.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]">
+(0, 50)
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Polling for task (id: VKWY6BOS565EJTXYZBASTLHM).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1nD-41zt1pTek6y1zcEUdVdJCuBrfjczb
+(50, 100)
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Polling for task (id: 6F6JLNHKXKVG2KH26IS6QD4N).
+Export completed successfully!
+Download Complete
+Deleted file with ID: 1ID9udPrkbuIlfesotUUiZiDoGi1VYrEV
+(31, 3428)
+(34, 3428)
+
+----- DONE -----
+
