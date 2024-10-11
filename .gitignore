@@ -371,3 +371,5 @@ slprj/
 .vscode/
 
 settings.json
+
+*.sh
