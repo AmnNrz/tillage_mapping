@@ -1,7 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,py:light
+#     formats: ipynb,py
 #     text_representation:
 #       extension: .py
 #       format_name: light
@@ -84,16 +84,17 @@ path_to_data = (
     "Projects/Tillage_Mapping/Data/field_level_data/"
 )
 
-test_df2017 = pd.read_csv(path_to_data + "mapping_data/2017/seasonBased_all.csv")
+# test_df2017 = pd.read_csv(path_to_data + "mapping_data/2017/seasonBased_all.csv")
+test_df2017 = pd.read_csv(path_to_data + "mapping_data/2012/seasonBased_all.csv")
 
 best_Tillage_estimator = load(path_to_model + "best_Tillage_estimator.joblib")
 best_RC_estimator = load(path_to_model + "best_RC_estimator.joblib")
 # -
 
-print(test_df2017.columns
+test_df2017
 
 # +
-important_features = ['pointID', 'ResidueType', 'sti_S0', 'ndi7_S0', 'crc_S0', 'ndti_S0', 'R_S2',
+important_features = ['pointID', 'sti_S0', 'ndi7_S0', 'crc_S0', 'ndti_S0', 'R_S2',
        'sndvi_S2', 'B_S0', 'SWIR2_S2', 'sti_S3', 'sndvi_S0', 'ndi5_S2',
        'ndvi_S1', 'evi_S3', 'ndvi_S0', 'sndvi_S3', 'aspect_savg', 'evi_S2',
        'crc_S2', 'gcvi_S2', 'sti_S1', 'NIR_S0', 'gcvi_S3', 'aspect', 'G_S0',
@@ -106,7 +107,7 @@ important_features = ['pointID', 'ResidueType', 'sti_S0', 'ndi7_S0', 'crc_S0', '
 test_df2017 = test_df2017.loc[:, important_features]
 test_df2017 = test_df2017.set_index('pointID')
 encode_dict_Restype = {"Grain": 1, "Legume": 2, "Canola": 3}
-test_df2017["ResidueType"] = test_df2017["ResidueType"].replace(encode_dict_Restype)
+# test_df2017["ResidueType"] = test_df2017["ResidueType"].replace(encode_dict_Restype)
 test_df2017 = test_df2017.fillna(test_df2017.median())
 test_df2017['ResidueType'] = test_df2017['ResidueType'].astype(int)
 test_df2017

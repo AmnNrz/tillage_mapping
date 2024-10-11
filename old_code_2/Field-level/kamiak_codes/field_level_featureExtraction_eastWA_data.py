@@ -1,6 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
+#     cell_metadata_json: true
 #     formats: ipynb,py
 #     text_representation:
 #       extension: .py
@@ -12,17 +13,9 @@
 #     name: python3
 # ---
 
-# + id="whtD--m_FObX"
+# + {"id": "whtD--m_FObX"}
 # Initialize GEE python API
 import ee
-# # Trigger the authentication flow.
-# ee.Authenticate()
-# # Initialize the library.
-# ee.Initialize()
-
-# # Install geemap
-# # !pip install geemap
-# # !pip install geopandas
 import ee
 import geemap
 import numpy as np
@@ -30,51 +23,69 @@ import geopandas as gpd
 import pandas as pd
 import time
 import os
-# # Mount google drive
-# from google.colab import drive
-# drive.mount('/content/drive')
+import sys
+# -
 
-# +
-import ee
+# These are hard coded here based on the number of fields in the shapefile.
+num_batches = int(sys.argv[1])
+batch_number = int(sys.argv[2])
 
 from google.auth import default
-
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/path/to/service-account-file.json"
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/gee_credentials/clear-shadow-332006-e8d8faf764f0.json"
-)
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/a.norouzikandelati/Google_stuff/gee_credentials/clear-shadow-332006-e8d8faf764f0.json"
 # Obtain credentials with the appropriate scope
 # Obtain credentials with additional scope for Google Drive
-credentials, _ = default(
-    scopes=[
-        "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/drive",
-    ]
-)
+credentials, _ = default(scopes=[
+    'https://www.googleapis.com/auth/cloud-platform',
+    'https://www.googleapis.com/auth/drive'
+])
 # # Initialize the Earth Engine API with the specified project
 # ee.Initialize(credentials=credentials, project='project-id')
-ee.Initialize(credentials=credentials, project="clear-shadow-332006")
+ee.Initialize(credentials=credentials, project='clear-shadow-332006')
 
-
-# + [markdown] id="dl5KSrInfIGI"
+# + [markdown] {"id": "dl5KSrInfIGI"}
 # #### Functions
 
-# + colab={"background_save": true} id="QaaLjXabmhWA"
+# + {"colab": {"background_save": true}, "id": "QaaLjXabmhWA"}
 #######################     Functions     ######################
 
-# ///// Rename Landsat 8, 7 and 5 bands /////
 
+# Make batches from a shapfile
+def make_batch(shapfile, num_batches, batch_number):
+    # Get the unique pointIDs
+    unique_pointIDs = shapfile['pointID'].unique()
+    field_count = len(unique_pointIDs)
+    print(f"{field_count = }")
+
+    # Calculate block size using integer division for consistency
+    batch_size = field_count // num_batches
+
+    # Determine the start and end indices for slicing
+    start_idx = (batch_number - 1) * batch_size
+    if batch_number < num_batches:
+        end_idx = start_idx + batch_size
+    else:
+        end_idx = field_count  # Include all remaining pointIDs in the last batch
+
+    # Get the pointIDs for the current batch
+    current_pointIDs = unique_pointIDs[start_idx:end_idx]
+
+    # Filter the shapefile to include only the current batch of pointIDs
+    shapefile_batch = shapfile[shapfile["pointID"].isin(current_pointIDs)].copy()
+    shapefile_batch.reset_index(drop=True, inplace=True)
+    print("shapefile_batch.shape = ", shapefile_batch.shape)
+    return shapefile_batch
+
+# ///// Rename Landsat 8, 7 and 5 bands /////
 def renameBandsL8(image):
     bands = ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7', 'QA_PIXEL'];
     new_bands = ['B', 'G', 'R', 'NIR', 'SWIR1', 'SWIR2', 'QA_PIXEL'];
     return image.select(bands).rename(new_bands)
 
-def renameBandsL7(image):
+def renameBandsL7_and_5(image):
     bands = ['SR_B1', 'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B7', 'QA_PIXEL'];
     new_bands = ['B', 'G', 'R', 'NIR', 'SWIR1', 'SWIR2', 'QA_PIXEL'];
-    return image.select(bands).rename(new_bands);
+    return image.select(bands).rename(new_bands)
 
 # ///// Apply scaling factor /////
 def applyScaleFactors(image):
@@ -340,12 +351,15 @@ def eeList_to_pyList(eeList):
     pyList = pyList + [eeList.get(i)]
   return pyList
 
-# ///// Convert python list to GEE list (ee.list)/////
+# # ///// Convert python list to GEE list (ee.list)/////
+# def pyList_to_eeList(pyList):
+#   eeList = ee.List([])
+#   for i in range(len(pyList)):
+#     eeList = eeList.add(pyList[i])
+#   return eeList
+
 def pyList_to_eeList(pyList):
-  eeList = ee.List([])
-  for i in range(len(pyList)):
-    eeList = eeList.add(pyList[i])
-  return eeList
+  return ee.List(pyList)
 
 # ///// Function to reduce each image in a collection (with different band
 # names for each image) to
@@ -383,7 +397,7 @@ def eefeatureColl_to_Pandas(yearlyList, bandNames, important_columns_names):
     df_yi = pd.DataFrame([])
     for j in range(year_i.length().getInfo()):
       f_j = year_i.get(j)  # Jth featureCollection (reduced composite data)
-      df_j = geemap.ee_to_geopandas(ee.FeatureCollection(f_j))  # Convert featureCollection to pandas dataframe
+      df_j = geemap.ee_to_gdf(ee.FeatureCollection(f_j))  # Convert featureCollection to pandas dataframe
       df_j = df_j[df_j.columns[(df_j.columns).isin(important_columns)]]   # Pick needed columns
       df_yi = pd.concat([df_yi, df_j], axis=1)
     df_yi = df_yi.loc[:,~df_yi.columns.duplicated()]   # Drop repeated 'pointID' columns
@@ -488,7 +502,7 @@ def eefeatureColl_to_Pandas_S1(yearlyList, bandNames, important_columns_names):
     for j in range(year_i.length().getInfo()):
       f_j = year_i.get(j)  # Jth featureCollection (reduced composite data)
       # Convert featureCollection to pandas dataframe
-      df_j = geemap.ee_to_geopandas(ee.FeatureCollection(f_j))
+      df_j = geemap.ee_to_gdf(ee.FeatureCollection(f_j))
       df_j = df_j[df_j.columns[(df_j.columns).isin(
           important_columns)]]   # Pick needed columns
       df_yi = pd.concat([df_yi, df_j], axis=1)
@@ -560,6 +574,11 @@ def remove_doy(image_list):
     new_image_list.append(img_filtered)
   return new_image_list
 
+# Function to add 'year' property to each image
+def addYear(image):
+    return image.set('year', ee.Date(image.get('system:time_start')).get('year'))
+
+
 
 # -
 
@@ -569,39 +588,40 @@ def remove_doy(image_list):
 ######## imports #########
 # consider a polygon that covers the study area (Whitman & Columbia counties)
 geometry = ee.Geometry.Polygon(
-    [[[-118.61039904725511, 47.40441980731236],
-      [-118.61039904725511, 45.934467488469],
-      [-116.80864123475511, 45.934467488469],
-      [-116.80864123475511, 47.40441980731236]]], None, False)
+        [[[-124.76076353098078, 49.26930796465981],
+          [-124.76076353098078, 45.32287437432444],
+          [-116.35622251535578, 45.32287437432444],
+          [-116.35622251535578, 49.26930796465981]]], None, False)
 
-geometry2 = ee.Geometry.Point([-117.10053796709163, 46.94957951590986]),
+path_to_data = ('/home/a.norouzikandelati/Projects/Tillage_mapping/Data/')
 
-path_to_data = ('/Users/aminnorouzi/Library/CloudStorage/'
-                'OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/'
-                'Projects/Tillage_Mapping/Data/')
+# Read shapefiles as geopandas dataframes and put them in a list
+files = os.listdir(path_to_data + "shapefiles/2012_2017_2022/")
+shapefile_names = [shp for shp in files if shp.endswith(".shp")]
 
-# path_to_data = ('/home/amnnrz/OneDrive - a.norouzikandelati/Ph.D/Projects/'
-#                 'Tillage_Mapping/Data/')
-
-
-shapefiles = [
-    file
-    for file in os.listdir(path_to_data + "GIS_Data/final_shpfiles")
-    if file.endswith(".shp")
+geopandas_list = [
+    gpd.read_file(path_to_data + "shapefiles/2012_2017_2022/" + _)
+    for _ in shapefile_names
 ]
 
-shpfilesList_ = [gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/" + shp)
-    for shp in shapefiles
+
+# Create batches
+geopandas_list = [
+        make_batch(
+            shp, num_batches, batch_number)
+              for shp in geopandas_list
 ]
 
-shpfilesList = [geemap.geopandas_to_ee(shp) for shp in shpfilesList_]
+shpfilesList = [
+    geemap.geopandas_to_ee(shp)
+     for shp in geopandas_list
+     ]
 
-startYear = 2021
-endYear = 2023
-
-years = np.arange(startYear, endYear)
-# GEE does not accept int64 so we convert it to python native int
-years = [int(year) for year in years]
+years = [2011, 2016, 2021]
+# Expand years to one year before and after each year
+# This is done for groupImages() function which filter fall of year i and spring
+# of year i+1 
+expanded_years = sorted(list(set([year - 1 for year in years] + years + [year + 1 for year in years])))
 # -
 
 # # Download CDL data
@@ -624,9 +644,8 @@ from googleapiclient.discovery import build
 
 # Path to your service account key file
 SERVICE_ACCOUNT_FILE = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/gee_credentials/clear-shadow-332006-e8d8faf764f0.json"
+    "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
+    "clear-shadow-332006-e8d8faf764f0.json"
 )
 
 # Define the scopes
@@ -666,22 +685,11 @@ delete_all_files()
 # ****** For 2021-2022 season, 2021 and for 2022-2023 season, 2022 CDL
 # ****** data is downloaded and used as PriorCropType
 
-# Read shapefiles as geopandas dataframes and put them in a list
-files = os.listdir(path_to_data + "GIS_Data/final_shpfiles")
-shapefile_names = [shp for shp in files if shp.endswith(".shp")]
-
-geopandas_list = [
-    gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/" + _)
-    for _ in shapefile_names
-]
-
 # Load the USDA NASS CDL dataset
 cdl = (
     ee.ImageCollection("USDA/NASS/CDL")
-    .filterDate(
-        ee.Date.fromYMD(ee.Number(startYear), 1, 1),
-        ee.Date.fromYMD(ee.Number(endYear), 12, 31),
-    )
+    .map(addYear)
+    .filter(ee.Filter.inList('year', years))
     .filterBounds(geometry)
 )
 
@@ -689,9 +697,8 @@ cdl = (
 def authenticate_drive():
     # Path to your service account key file
     SERVICE_ACCOUNT_FILE = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/gee_credentials/clear-shadow-332006-e8d8faf764f0.json"
+    "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
+    "clear-shadow-332006-e8d8faf764f0.json"
 )
     # Define the scopes
     SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -726,9 +733,8 @@ def find_file(service, file_name):
 def delete_file(file_id):
     # Path to your service account key file
     SERVICE_ACCOUNT_FILE = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/gee_credentials/clear-shadow-332006-e8d8faf764f0.json"
+    "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
+    "clear-shadow-332006-e8d8faf764f0.json"
 )
     # Define the scopes
     SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -786,7 +792,7 @@ def export_data_to_drive(image, batch_collection, description, file_format,
     return df
 
 
-def processInBatches(image, polygonsList, batch_size, file_name):
+def processInBatches(image, polygonsList, batch_size, file_name, batch_number, year):
     num_batches = math.ceil(len(polygonsList) / batch_size)
     cdl_df = pd.DataFrame()
     for i in range(num_batches):
@@ -803,7 +809,8 @@ def processInBatches(image, polygonsList, batch_size, file_name):
             image,
             batch_collection,
             # f"histogram_export_batch_{i+1}_polygon_{j+1}",
-            f"histogram_export_batch_{i+1}",
+            f"{year}" + "_batch_number:" + f"{batch_number}"
+            + "_" + f"cdl_histogram_export_batch_{i+1}",
             "CSV",
             # f"{file_name}" + f"histogram_export_batch_{i+1}_polygon_{j+1}",
             f"{file_name}" + f"histogram_export_batch_{i+1}",
@@ -813,7 +820,7 @@ def processInBatches(image, polygonsList, batch_size, file_name):
     return cdl_df
 
 
-def cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name):
+def cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name, batch_number):
     cdl_image = cdl.filterDate(
         ee.Date.fromYMD(ee.Number(int(year)), 1, 1),
         ee.Date.fromYMD(ee.Number(int(year)), 12, 31),
@@ -822,7 +829,7 @@ def cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name):
     polygons = geemap.geopandas_to_ee(shapefile)
     polygonsList = eeList_to_pyList(polygons.toList(polygons.size()))
 
-    return processInBatches(cdl_image, polygonsList, batch_size, file_name)
+    return processInBatches(cdl_image, polygonsList, batch_size, file_name, batch_number, year)
 
 def find_most_requesnt_crop(dict_str):
     dict = eval(dict_str.replace('=', ':'))
@@ -830,26 +837,34 @@ def find_most_requesnt_crop(dict_str):
     return max_key
 
 # Define your batch size
-batch_size = 100  # Adjust this based on your needs
+batch_size = 50  # Adjust this based on your needs
 # Example of processing and exporting for each year and shapefile
 cdl_list = []
 for year, shapefile, shpfile_name in zip(years, geopandas_list, shapefile_names):
     shapefile_name =shpfile_name
     file_name = shapefile_name + f"{year}"
-    cdl_list.append(cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name))
+    downloaded_cdl = cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name, batch_number)
+    downloaded_cdl['year'] = year
+    cdl_list.append(downloaded_cdl)
 
 cdl_df = pd.DataFrame()
 for df in cdl_list:
     df["most_frequent_crop"] = df["cropland"].apply(find_most_requesnt_crop)
-    cdl_df = pd.concat([cdl_df, df[["pointID", "most_frequent_crop"]]])
+    cdl_df = pd.concat([cdl_df, df[["year", "pointID", "most_frequent_crop"]]])
 
-cdl_df.to_csv(path_to_data + "field_level_data/FINAL_DATA/cdl_df.csv", index=False)
-cdl_df.head(5)
+cdl_df.to_csv(
+    path_to_data
+    + "2012_2017_2022/cdl_data/"
+    + "cdl_df_batch_"
+    + f"{batch_number}"
+    + ".csv",
+    index=False
+    )
 
-# + [markdown] id="DUhdHR8xIrUE"
+# + [markdown] {"id": "DUhdHR8xIrUE"}
 # # Download Metric-Based Landsat Data
 
-# + colab={"background_save": true} id="vrRY7E6NLhul"
+# + {"colab": {"background_save": true}, "id": "vrRY7E6NLhul"}
 from functools import reduce
 #####################################################################
 ###################      Season-based Features      #################
@@ -860,15 +875,28 @@ from functools import reduce
 
 L8T1 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
 L7T1 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2")
+L5T1 = ee.ImageCollection("LANDSAT/LT05/C02/T1_L2")
 
 L8 = (
-    L8T1.filter(ee.Filter.calendarRange(startYear, endYear, "year"))
+    L8T1
+    .map(addYear)
+    .filter(ee.Filter.inList('year', expanded_years))
     .map(lambda img: img.set("year", img.date().get("year")))
     .map(lambda img: img.clip(geometry))
 )
 
 L7 = (
-    L7T1.filter(ee.Filter.calendarRange(startYear, endYear, "year"))
+    L7T1
+    .map(addYear)
+    .filter(ee.Filter.inList('year', expanded_years))
+    .map(lambda img: img.set("year", img.date().get("year")))
+    .map(lambda img: img.clip(geometry))
+)
+
+L5 = (
+    L5T1
+    .map(addYear)
+    .filter(ee.Filter.inList('year', expanded_years))
     .map(lambda img: img.set("year", img.date().get("year")))
     .map(lambda img: img.clip(geometry))
 )
@@ -876,38 +904,38 @@ L7 = (
 # Apply scaling factor
 L8 = L8.map(applyScaleFactors)
 L7 = L7.map(applyScaleFactors)
+L5 = L5.map(applyScaleFactors)
 
 # Rename bands
 L8 = L8.map(renameBandsL8)
-L7 = L7.map(renameBandsL7)
+L7 = L7.map(renameBandsL7_and_5)
+L5 = L5.map(renameBandsL7_and_5)
 
 # Merge Landsat 7 and 8 collections
-landSat_7_8 = ee.ImageCollection(L8.merge(L7))
+landSat_5_7_8 = ee.ImageCollection(L8.merge(L7).merge(L5))
+
 
 # Apply NDVI mask
-landSat_7_8 = landSat_7_8.map(addNDVI)
+landSat_5_7_8 = landSat_5_7_8.map(addNDVI)
 
-landSat_7_8 = landSat_7_8.map(lambda image: maskNDVI(image, threshold=0.3))
+landSat_5_7_8 = landSat_5_7_8.map(lambda image: maskNDVI(image, threshold=0.3))
 
 # Mask Clouds
-landSat_7_8 = landSat_7_8.map(cloudMaskL8)
+landSat_5_7_8 = landSat_5_7_8.map(cloudMaskL8)
 
 # Mask prercipitation > 3mm two days prior
-# import Gridmet collection
+# Import GridMet collection and apply the filters
 GridMet = (
     ee.ImageCollection("IDAHO_EPSCOR/GRIDMET")
-    .filter(
-        ee.Filter.date(
-            ee.Date.fromYMD(ee.Number(startYear), 1, 1),
-            ee.Date.fromYMD(ee.Number(endYear), 12, 30),
-        )
-    )
-    .filterBounds(geometry)
+    .map(addYear)
+    .filter(ee.Filter.inList('year', expanded_years))  # Filter images by 'year' property
+    .filterBounds(geometry)  # Keep your existing spatial filter
 )
-landSat_7_8 = landSat_7_8.map(lambda image: MoistMask(image, GridMet))
+
+landSat_5_7_8 = landSat_5_7_8.map(lambda image: MoistMask(image, GridMet))
 
 # Add spectral indices to each in the collection as bands
-landSat_7_8 = landSat_7_8.map(addIndices)
+landSat_5_7_8 = landSat_5_7_8.map(addIndices)
 
 ###########################################################################
 ###################      Distribution-based Features      #################
@@ -920,9 +948,9 @@ landSat_7_8 = landSat_7_8.map(addIndices)
 # Create a list of lists of imageCollections. Each year would have n number
 # of imageCollection corresponding to the time periods specified
 # for creating metric composites.
-yearlyCollectionsList = [groupImages(y, landSat_7_8, geometry) for y in years]
+yearlyCollectionsList = [groupImages(y, landSat_5_7_8, geometry) for y in years]
 
-minNDTI_imageList = [add_minNDTI(y, landSat_7_8, geometry) for y in years]
+minNDTI_imageList = [add_minNDTI(y, landSat_5_7_8, geometry) for y in years]
 
 minNDTI_terrain_yearcollection = [
     add_terrain(image_list) for image_list in minNDTI_imageList
@@ -1008,14 +1036,8 @@ glcmBands = [name for sublist in nameLists for name in sublist]
 
 important_columns_names = [
     "pointID",
-    "CurrentCro",
-    "DateTime",
-    "PriorCropT",
-    "ResidueCov",
-    "Tillage",
-    "WhereInRan",
-    # "ExactAcres",
-    # "County"
+    "ExactAcres",
+    "County"
 ]
 
 metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas(
@@ -1039,169 +1061,188 @@ Landsat_metricBased_list = list(map(
 print(Landsat_metricBased_list[0].shape)
 print(Landsat_metricBased_list[1].shape)
 
+Landsat_metricBased_list_with_year = []
+for df, year in zip(Landsat_metricBased_list, years):
+    df = df.copy()
+    df.loc[:, "year"] = year + 1
+    Landsat_metricBased_list_with_year.append(df)
+
 Landsat_metricBased_df = pd.DataFrame()
-for df in Landsat_metricBased_list:
+for df in Landsat_metricBased_list_with_year:
     Landsat_metricBased_df = pd.concat([Landsat_metricBased_df, df])
+year_column = Landsat_metricBased_df.pop('year')
+Landsat_metricBased_df.insert(1, 'year', year_column)
 # -
 
 # # Download Metric-Based Sentinel-1 Data
 
 # +
-from functools import reduce
-###########################################################################
-###################      Distribution-based Features      #################
-###########################################################################
-# Create a list of lists of imageCollections. Each year would have n number
-# of imageCollection corresponding to the time periods specified
-# for creating metric composites.
-Sentinel_1 = ee.ImageCollection("COPERNICUS/S1_GRD") \
-    .filter(ee.Filter.calendarRange(startYear, endYear, 'year')) \
-    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
-    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
-    .filter(ee.Filter.eq('instrumentMode', 'IW')) \
-    .map(lambda img: img.set('year', img.date().get('year')))\
-    .map(lambda img: img.clip(geometry))
+# from functools import reduce
+# ###########################################################################
+# ###################      Distribution-based Features      #################
+# ###########################################################################
+# # Create a list of lists of imageCollections. Each year would have n number
+# # of imageCollection corresponding to the time periods specified
+# # for creating metric composites.
+# Sentinel_1 = ee.ImageCollection("COPERNICUS/S1_GRD") \
+#     .map(addYear) \
+#     .filter(ee.Filter.inList('year', expanded_years)) \
+#     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
+#     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
+#     .filter(ee.Filter.eq('instrumentMode', 'IW')) \
+#     .map(lambda img: img.set('year', img.date().get('year')))\
+#     .map(lambda img: img.clip(geometry))
 
-# Convert pixel values to logarithmic scale (decible scale)
-def toDb(img):
+# # Convert pixel values to logarithmic scale (decible scale)
+# def toDb(img):
 
-    dB = ee.Image(10.0).multiply(img.log10()).toFloat()
-    # Rename the bands for VV and VH
-    bands = img.bandNames();
-    newBands = bands.map(lambda band: ee.String(band).cat('_dB'))
+#     dB = ee.Image(10.0).multiply(img.log10()).toFloat()
+#     # Rename the bands for VV and VH
+#     bands = img.bandNames();
+#     newBands = bands.map(lambda band: ee.String(band).cat('_dB'))
 
-    # Add dB bands and rename them
-    imageWithDb = img.addBands(dB)
-    renamedImage = imageWithDb.select(bands, newBands)
+#     # Add dB bands and rename them
+#     imageWithDb = img.addBands(dB)
+#     renamedImage = imageWithDb.select(bands, newBands)
 
-    return renamedImage
+#     return renamedImage
 
 
-# Apply preprocessing and visualization
-processedCollection = Sentinel_1 \
-.map(toDb) \
-.map(lambda img: img.select(['VV_dB', 'VH_dB']))
+# # Apply preprocessing and visualization
+# processedCollection = Sentinel_1 \
+# .map(toDb) \
+# .map(lambda img: img.select(['VV_dB', 'VH_dB']))
 
-# # Display on map
-# Map = geemap.Map(center=[46.94, -117.100], zoom=7)
-# Map.addLayer(processedCollection, {
-#              'bands': ['VV_dB', 'VH_dB'], 'min': -20, 'max': 0}, 'Sentinel-1')
-# Map
+# # # Display on map
+# # Map = geemap.Map(center=[46.94, -117.100], zoom=7)
+# # Map.addLayer(processedCollection, {
+# #              'bands': ['VV_dB', 'VH_dB'], 'min': -20, 'max': 0}, 'Sentinel-1')
+# # Map
 
-# Specify time period
-years = list(range(startYear, endYear))
+# yearlyCollectionsList = []
+# for y in years:
+#   yearlyCollectionsList = yearlyCollectionsList + \
+#   [groupImages_S1(y, processedCollection, geometry)]  # 'yearlyCollectionsList' is a Python list
 
-yearlyCollectionsList = []
-for y in years:
-  yearlyCollectionsList = yearlyCollectionsList + \
-  [groupImages_S1(y, processedCollection, geometry)]  # 'yearlyCollectionsList' is a Python list
+# # Clip each collection to the WSDA field boundaries
+# clipped_mainBands_CollectionList = list(map(
+#   lambda collList, shp: list(map(
+#     lambda collection: ee.ImageCollection(collection).map(
+#       lambda img: img.clip(ee.FeatureCollection(shp))), collList)),
+#         yearlyCollectionsList, shpfilesList))
 
-# Clip each collection to the WSDA field boundaries
-clipped_mainBands_CollectionList = list(map(
-  lambda collList, shp: list(map(
-    lambda collection: ee.ImageCollection(collection).map(
-      lambda img: img.clip(ee.FeatureCollection(shp))), collList)),
-        yearlyCollectionsList, shpfilesList))
+# # Extract GLCM metrics
+# clipped_GLCM_collectionList = list(map(
+#   lambda collList: list(map(applyGLCM, collList)),
+#     clipped_mainBands_CollectionList))
 
-# Extract GLCM metrics
-clipped_GLCM_collectionList = list(map(
-  lambda collList: list(map(applyGLCM, collList)),
-    clipped_mainBands_CollectionList))
+# # # Compute percentiles
+# percentiles = [5, 25, 50, 75, 100]
+# mainBands_percentile_collectionList = \
+# list(map(lambda collList: list(map(lambda collection: collection.reduce(
+#   ee.Reducer.percentile(percentiles)), collList)),
+#     clipped_mainBands_CollectionList))
 
-# # Compute percentiles
-percentiles = [5, 25, 50, 75, 100]
-mainBands_percentile_collectionList = \
-list(map(lambda collList: list(map(lambda collection: collection.reduce(
-  ee.Reducer.percentile(percentiles)), collList)),
-    clipped_mainBands_CollectionList))
+# mainBands_percentile_collectionList = [
+#     remove_doy(image_list) for image_list in mainBands_percentile_collectionList
+# ]
 
-mainBands_percentile_collectionList = [
-    remove_doy(image_list) for image_list in mainBands_percentile_collectionList
-]
+# glcmBands_percentile_collectionList = \
+# list(map(lambda collList: list(map(lambda collection: collection.reduce(
+#   ee.Reducer.percentile(percentiles)), collList)),
+#     clipped_GLCM_collectionList))
 
-glcmBands_percentile_collectionList = \
-list(map(lambda collList: list(map(lambda collection: collection.reduce(
-  ee.Reducer.percentile(percentiles)), collList)),
-    clipped_GLCM_collectionList))
+# glcmBands_percentile_collectionList = [
+#     remove_doy(image_list) for image_list in glcmBands_percentile_collectionList
+# ]
 
-glcmBands_percentile_collectionList = [
-    remove_doy(image_list) for image_list in glcmBands_percentile_collectionList
-]
+# # Reduce each image in the imageCollections (with main bands) to mean
+# #  value over each field (for each year)
+# # This will produce a list of lists containing reduced featureCollections
+# reducedList_mainBands = list(map(
+#   lambda imgList, shp:percentile_imageReducer(
+#     imgList, ee.FeatureCollection(shp)),
+#        mainBands_percentile_collectionList, shpfilesList))    
 
-# Reduce each image in the imageCollections (with main bands) to mean
-#  value over each field (for each year)
-# This will produce a list of lists containing reduced featureCollections
-reducedList_mainBands = list(map(
-  lambda imgList, shp:percentile_imageReducer(
-    imgList, ee.FeatureCollection(shp)),
-       mainBands_percentile_collectionList, shpfilesList))    
+# # Reduce each image in the imageCollections (with GLCM bands)
+# #  to mean value over each field (for each year)
+# reducedList_glcmBands = list(map(
+#     lambda imgList, shp: percentile_imageReducer(
+#         imgList, ee.FeatureCollection(shp)),
+#     glcmBands_percentile_collectionList, shpfilesList))
 
-# Reduce each image in the imageCollections (with GLCM bands)
-#  to mean value over each field (for each year)
-reducedList_glcmBands = list(map(
-    lambda imgList, shp: percentile_imageReducer(
-        imgList, ee.FeatureCollection(shp)),
-    glcmBands_percentile_collectionList, shpfilesList))
+# # Extract band names to use in our dataframes
+# # The bands are identical for all years so we use the first year
+# #  imageCollection, [0]
+# # Main bands:
+# nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
+#                       mainBands_percentile_collectionList[0]))
+# mainBands = [name for sublist in nameLists for name in sublist]
 
-# Extract band names to use in our dataframes
-# The bands are identical for all years so we use the first year
-#  imageCollection, [0]
-# Main bands:
-nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
-                      mainBands_percentile_collectionList[0]))
-mainBands = [name for sublist in nameLists for name in sublist]
+# # GLCM bands:
+# nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
+#                       glcmBands_percentile_collectionList[0]))
+# glcmBands = [name for sublist in nameLists for name in sublist]
 
-# GLCM bands:
-nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
-                      glcmBands_percentile_collectionList[0]))
-glcmBands = [name for sublist in nameLists for name in sublist]
+# # Convert each year's composites to a single dataframe
+# # and put all the dataframes in a list a dataframe.
 
-# Convert each year's composites to a single dataframe
-# and put all the dataframes in a list a dataframe.
+# important_columns_names = [
+#     "pointID",
+#     "ExactAcres",
+#     "County"
+# ]
 
-important_columns_names = [
-    "pointID",
-    "CurrentCro",
-    "DateTime",
-    "PriorCropT",
-    "ResidueCov",
-    "Tillage",
-    "WhereInRan",
-    # "ExactAcres",
-    # "County"
-]
+# metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas_S1(
+#   reducedList_mainBands, mainBands, important_columns_names)
 
-metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas_S1(
-  reducedList_mainBands, mainBands, important_columns_names)
+# metricBased_dataframeList_glcm = eefeatureColl_to_Pandas_S1(
+#   reducedList_glcmBands, glcmBands, important_columns_names)
 
-metricBased_dataframeList_glcm = eefeatureColl_to_Pandas_S1(
-  reducedList_glcmBands, glcmBands, important_columns_names)
+# # Merge main and glcm bands for each year
+# allYears_metricBased_list = list(map(
+#     lambda mainband_df, glcmband_df: pd.concat(
+#         [mainband_df, glcmband_df], axis=1),
+#     metricBased_dataframeList_mainBands, metricBased_dataframeList_glcm))
 
-# Merge main and glcm bands for each year
-allYears_metricBased_list = list(map(
-    lambda mainband_df, glcmband_df: pd.concat(
-        [mainband_df, glcmband_df], axis=1),
-    metricBased_dataframeList_mainBands, metricBased_dataframeList_glcm))
+# # Remove duplicated columns
+# duplicated_cols_idx = [df.columns.duplicated()
+#                        for df in allYears_metricBased_list]
+# Sentinel_1_metricBased_list = list(map(
+#     lambda df, dup_idx: df.iloc[:, ~dup_idx], allYears_metricBased_list, duplicated_cols_idx))
 
-# Remove duplicated columns
-duplicated_cols_idx = [df.columns.duplicated()
-                       for df in allYears_metricBased_list]
-Sentinel_1_metricBased_list = list(map(
-    lambda df, dup_idx: df.iloc[:, ~dup_idx], allYears_metricBased_list, duplicated_cols_idx))
+# print(Sentinel_1_metricBased_list[0].shape)
+# print(Sentinel_1_metricBased_list[1].shape)
 
-print(Sentinel_1_metricBased_list[0].shape)
-print(Sentinel_1_metricBased_list[1].shape)
+# Sentinel_1_metricBased_list_with_year = []
+# for df, year in zip(Sentinel_1_metricBased_list, years):
+#   df = df.copy()
+#   df.loc[:, "year"] = year + 1 
+#   Sentinel_1_metricBased_list_with_year.append(df)
 
-Sentinel_1_metricBased_df = pd.DataFrame()
-for df in Sentinel_1_metricBased_list:
-    Sentinel_1_metricBased_df = pd.concat([Sentinel_1_metricBased_df, df])
-# -
+# Sentinel_1_metricBased_df = pd.DataFrame()
+# for df in Sentinel_1_metricBased_list_with_year:
+#     Sentinel_1_metricBased_df = pd.concat([Sentinel_1_metricBased_df, df])
 
-Sentinel_1_metricBased_df.to_csv(
-    path_to_data + "field_level_data/FINAL_DATA/Sentinel_1_metricBased.csv",
-    index = False
-)
+# year_column = Sentinel_1_metricBased_df.pop('year')
+# Sentinel_1_metricBased_df.insert(1, 'year', year_column)
+
+# +
+# Sentinel_1_metricBased_df.to_csv(
+#     path_to_data
+# + "2012_2017_2022/landsat_data/"
+
+# + "Sentinel_1_metricBased_eastwa_"
+
+# + f" {"incorrectly_encoded_metadata": "{batch_number}\""}
+
+# + ".csv", {"index": false}
+# )
 Landsat_metricBased_df.to_csv(
-    path_to_data + "field_level_data/FINAL_DATA/Landsat_metricBased.csv", 
-    index = False
+    path_to_data
+    + "2012_2017_2022/landsat_data/"
+    + "Landsat_metricBased_eastwa_"
+    + f"{batch_number}"
+    + ".csv",
+    index=False
 )

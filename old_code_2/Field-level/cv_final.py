@@ -132,6 +132,8 @@ print(df1["ResidueCov"].value_counts(), df2["ResidueCov"].value_counts())
 df = pd.concat([df1, df2])
 # -
 
+conf_matrix.diagonal(), conf_matrix.sum(axis=1)
+
 df.loc[df['PriorCropT'] == "Legume"]['ResidueCov'].value_counts()
 
 df__ = df[["Tillage", "ResidueCov", "ResidueType"]]

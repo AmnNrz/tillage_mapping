@@ -246,6 +246,8 @@ Pij = confusion_counts.apply(lambda row: Wi[row.name] * row / ni_plus[row.name],
 Pij
 # -
 
+confusion_counts
+
 ni_plus
 
 total_acres_by_class

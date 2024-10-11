@@ -19,6 +19,19 @@ import numpy as np
 import re
 import geopandas as gpd
 
+shpfile_2022 = gpd.read_file("/Users/aminnorouzi/Library/CloudStorage/OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/Tillage_Mapping/Data/field_level_data/mapping_data/2022/WSDA_2022.shp")
+shpfile_2022
+
+# +
+counties = ["Whitman", "Columbia", "Spokane", "Walla Walla", "Asotin", "Garfield"]
+shpfile_2022 = shpfile_2022.loc[shpfile_2022['County'].isin(counties)]
+shpfile_2022.County.value_counts()
+
+shpfile_2022.to_file("/Users/aminnorouzi/Library/CloudStorage/OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/Tillage_Mapping/Data/field_level_data/mapping_data/2022/shpfile_2022.shp")
+# -
+
+
+
 # # CDL
 
 # +
@@ -236,8 +249,6 @@ df
 tillage_pred = best_Tillage_estimator.predict(df)
 tillage_pred
 
-cdl_df['County'].value_counts()
-
 # +
 import geopandas as gpd
 
@@ -322,14 +333,14 @@ total_acres
 # gpd_df_filtered = gpd_df_2017_filtered
 
 # +
-# path_to_data = (
-#     "/Users/aminnorouzi/Library/CloudStorage/"
-#     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
-#     "Tillage_Mapping/Data/GIS_Data/2012_2017_wsda/"
-# )
+path_to_data = (
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
+    "Tillage_Mapping/Data/GIS_Data/2012_2017_wsda/"
+)
 
-# gpd_df_2012_filtered.to_file(path_to_data + "WSDA_2012_filtered.shp")
-# gpd_df_2017_filtered.to_file(path_to_data + "WSDA_2017_filtered.shp")
+gpd_df_2012_filtered.to_file(path_to_data + "WSDA_2012_filtered.shp")
+gpd_df_2017_filtered.to_file(path_to_data + "WSDA_2017_filtered.shp")
 
 # +
 ######=====  Sample points grouped by irrigation type  =====#########
@@ -374,34 +385,43 @@ gdf.set_crs("EPSG:4326", inplace=True)
 # Now you can convert to another CRS
 # Replace 'whitman_columbia.crs' with the actual CRS you want to convert to
 gdf = gdf.to_crs(pnw.crs)
+
+# +
+# gdf_ = gdf.loc[gdf['County'].isin(["Columbia", "Whitman"])]
+# gdf_ = gdf
+
+gdf_ = gpd.read_file("/Users/aminnorouzi/Library/CloudStorage/OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/Tillage_Mapping/Data/field_level_data/mapping_data/2017/WSDA_2017.shp")
 # -
 
-# gdf_ = gdf.loc[gdf['County'].isin(["Columbia", "Whitman"])]
-gdf_ = gdf
+gdf_ = gdf_.loc[
+    gdf_["County"].isin(
+        ["Whitman", "Columbia", "Spokane", "Walla Walla", "Asotin", "Garfield"]
+    )
+]
 
-gdf_ = gdf_.reset_index(drop=True)
-gdf_
-
-gdf_['County'].value_counts()
+# Define your classes
+classes = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
+# Add a new column with random classes
+gdf_["Tillage"] = np.random.choice(classes, size=len(gdf_))
 
 # +
 import pandas as pd
 import numpy as np
 
-2019: "0-15%": 0.15, "16-30%": 0.45, ">30%": 0.40
-2020: "0-15%": 0.11, "16-30%": 0.52, ">30%": 0.37
-2021: "0-15%": 0.23, "16-30%": 0.43, ">30%": 0.34
-2022: "0-15%": 0.18, "16-30%": 0.55, ">30%": 0.27
+# 2019: "0-15%": 0.15, "16-30%": 0.45, ">30%": 0.40
+# 2020: "0-15%": 0.11, "16-30%": 0.52, ">30%": 0.37
+# 2021: "0-15%": 0.23, "16-30%": 0.43, ">30%": 0.34
+# 2022: "0-15%": 0.18, "16-30%": 0.55, ">30%": 0.27
 
-# 2012
-targets = {
-    "Whitman": {"ConventionalTill": 22, "MinimumTill": 61, "NoTill-DirectSeed": 17},
-    "Columbia": {"ConventionalTill": 19, "MinimumTill": 46, "NoTill-DirectSeed": 35},
-    "Garfield": {"ConventionalTill": 31, "MinimumTill": 28, "NoTill-DirectSeed": 41},
-    "Spokane": {"ConventionalTill": 37, "MinimumTill": 33, "NoTill-DirectSeed": 30},
-    "Walla Walla": {"ConventionalTill": 20, "MinimumTill": 52, "NoTill-DirectSeed": 28},
-    "Asotin": {"ConventionalTill": 11, "MinimumTill": 4, "NoTill-DirectSeed": 85},
-}
+# # 2012
+# targets = {
+#     "Whitman": {"ConventionalTill": 22, "MinimumTill": 61, "NoTill-DirectSeed": 17},
+#     "Columbia": {"ConventionalTill": 19, "MinimumTill": 46, "NoTill-DirectSeed": 35},
+#     "Garfield": {"ConventionalTill": 31, "MinimumTill": 28, "NoTill-DirectSeed": 41},
+#     "Spokane": {"ConventionalTill": 37, "MinimumTill": 33, "NoTill-DirectSeed": 30},
+#     "Walla Walla": {"ConventionalTill": 20, "MinimumTill": 52, "NoTill-DirectSeed": 28},
+#     "Asotin": {"ConventionalTill": 11, "MinimumTill": 4, "NoTill-DirectSeed": 85},
+# }
 
 # # 2017
 # targets = {
@@ -685,6 +705,7 @@ plt.show()
 # -
 
 gdf_['Tillage'].value_counts()
+gdf_.to_file("/Users/aminnorouzi/Library/CloudStorage/OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/Tillage_Mapping/Data/field_level_data/mapping_data/tillmap_2017.shp")
 
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -867,3 +888,22 @@ data = {
 # Creating DataFrame
 df = pd.DataFrame(data)
 df
+# -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
