@@ -372,6 +372,6 @@ slprj/
 
 # settings.json
 
-*.sh
+# *.sh
 *.e
 *.o
