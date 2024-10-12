@@ -368,8 +368,8 @@ slprj/
 #
 *.h5
 
-.vscode/
+# .vscode/
 
-settings.json
+# settings.json
 
 *.sh

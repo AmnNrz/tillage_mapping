@@ -1,0 +1,41 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": ".ipynb to .py",
+            "type": "shell",
+            "command": "jupytext --set-formats ipynb,py \"${file}\"; jupytext --sync \"${file}\"",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Convert .ipynb to .py"
+        },
+        {
+            "label": ".py to .ipynb",
+            "type": "shell",
+            "command": "jupytext --set-formats py,ipynb \"${file}\"; jupytext --sync \"${file}\"",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Convert .py to .ipynb"
+        },
+        {
+            "label": "all .ipynb to .py",
+            "type": "shell",
+            "command": "find . -name '*.ipynb' -exec sh -c 'jupytext --set-formats ipynb,py \"$1\"; jupytext --sync \"$1\"' _ {} \\;",
+            "problemMatcher": []
+        },
+        {
+            "label": "all .py to .ipynb",
+            "type": "shell",
+            "command": "/Users/aminnorouzi/bin/sync_py_to_ipynb.sh",
+            "problemMatcher": []
+        }
+    ]
+}
