@@ -375,3 +375,7 @@ slprj/
 # *.sh
 *.e
 *.o
+qsubs/*.sh
+qsubs/
+error/*.e
+error/*.o
