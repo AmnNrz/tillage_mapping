@@ -377,5 +377,6 @@ slprj/
 *.o
 qsubs/*.sh
 qsubs/
+error/
 error/*.e
 error/*.o
