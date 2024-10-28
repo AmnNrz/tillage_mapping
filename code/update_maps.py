@@ -28,7 +28,7 @@ path_to_data = (
 )
 
 mapped_2022 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/mapped_2022.csv"
+    path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/mapped_2012.csv"
 )
 
 
@@ -37,7 +37,7 @@ mapped_2022 = pd.read_csv(
 
 def swapcols(df):
     # Columns you want to swap
-    col1 = "ResidueCov"
+    col1 = "fr_pred"
     col2 = "County"
 
     # Get the list of all columns
@@ -63,69 +63,62 @@ import pandas as pd
 df = mapped_2022.copy()
 
 
-# Target relative area DataFrame
+# # 2022 updated target relative area
+# target_relative_area = pd.DataFrame({
+#     'County': ['Asotin', 'Asotin', 'Asotin', 'Columbia', 'Columbia', 'Columbia', 'Garfield', 'Garfield', 'Garfield', 
+#                'Spokane', 'Spokane', 'Spokane', 'Walla Walla', 'Walla Walla', 'Walla Walla', 
+#                'Whitman', 'Whitman', 'Whitman'],
+#     'Tillage': ['NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
+#                 'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
+#                 'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
+#                 'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
+#                 'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
+#                 'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill'],
+#     'relative_area_target': [81.0, 3.5, 15.5,   # Asotin percentages
+#                              63.0, 18.0, 19.0,  # Columbia percentages
+#                              41.0, 48.0, 11.0,  # Garfield percentages
+#                              30.0, 55.0, 15.0,  # Spokane percentages
+#                              15.0, 66.0, 19.0,  # Walla Walla percentages
+#                              55.0, 30.0, 15.0]  # Whitman percentages
+# })
+
+# # 2017 updated target relative area
+# target_relative_area = pd.DataFrame({
+#     'County': ['Asotin', 'Asotin', 'Asotin', 'Columbia', 'Columbia', 'Columbia', 'Garfield', 'Garfield', 'Garfield',
+#                'Spokane', 'Spokane', 'Spokane', 'Walla Walla', 'Walla Walla', 'Walla Walla',
+#                'Whitman', 'Whitman', 'Whitman'],
+#     'Tillage': ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed'],
+#     'relative_area_target': [16.0, 4.0, 80.0,    # Asotin percentages
+#                              18.0, 34.0, 48.0,  # Columbia percentages
+#                              15.0, 33.0, 52.0,  # Garfield percentages
+#                              20.0, 25.0, 55.0,  # Spokane percentages
+#                              32.0, 64.0, 4.0,   # Walla Walla percentages
+#                              17.0, 50.0, 33.0]  # Whitman percentages
+# })
+
+# 2012 updated target relative area
 target_relative_area = pd.DataFrame({
-    'County': ['Asotin', 'Asotin', 'Asotin', 'Columbia', 'Columbia', 'Columbia', 'Garfield', 'Garfield', 'Garfield', 
-               'Spokane', 'Spokane', 'Spokane', 'Walla Walla', 'Walla Walla', 'Walla Walla', 
+    'County': ['Asotin', 'Asotin', 'Asotin', 'Columbia', 'Columbia', 'Columbia', 'Garfield', 'Garfield', 'Garfield',
+               'Spokane', 'Spokane', 'Spokane', 'Walla Walla', 'Walla Walla', 'Walla Walla',
                'Whitman', 'Whitman', 'Whitman'],
-    'Tillage': ['NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
-                'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
-                'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
-                'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
-                'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill',
-                'NoTill-DirectSeed', 'MinimumTill', 'ConventionalTill'],
-    'relative_area_target': [78.0, 1.6591, 20.3409,  # Asotin percentages
-                             58.0, 21.0, 21.0,      # Columbia percentages
-                             44.0, 41.0, 15.0,      # Garfield percentages
-                             33.0, 51.0, 16.0,      # Spokane percentages
-                             18.0, 67.4683, 14.5317, # Walla Walla percentages
-                             44.0, 39.0, 17.0]      # Whitman percentages
+    'Tillage': ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+                'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+                'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+                'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+                'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed',
+                'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed'],
+    'relative_area_target': [17.0, 3.0, 80.0,    # Asotin percentages
+                             28.4, 33.9, 37.6,  # Columbia percentages
+                             30.0, 30.0, 40.0,  # Garfield percentages
+                             51.0, 40.0, 9.0,   # Spokane percentages
+                             10.0, 60.0, 30.0,  # Walla Walla percentages
+                             28.0, 45.0, 27.0]  # Whitman percentages
 })
-
-
-
-
-# # 2017
-# target_relative_area = pd.DataFrame({
-#     'County': ['Asotin', 'Asotin', 'Asotin', 'Columbia', 'Columbia', 'Columbia', 'Garfield', 'Garfield', 'Garfield', 
-#                'Spokane', 'Spokane', 'Spokane', 'Walla Walla', 'Walla Walla', 'Walla Walla', 
-#                'Whitman', 'Whitman', 'Whitman'],
-#     'Tillage': ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed'],
-#     'relative_area_target': [17.0, 5.0, 78.0,
-#                              16.0, 39.0, 45.0,
-#                              13.404, 31.596, 55.0,
-#                              19.3795, 29.8113, 50.8092,
-#                              25.5564, 67.4436, 7.0,
-#                              15.1594, 53.0, 31.8406]})
-
-
-
-
-# # 2012
-# target_relative_area = pd.DataFrame({
-#     'County': ['Asotin', 'Asotin', 'Asotin', 'Columbia', 'Columbia', 'Columbia', 'Garfield', 'Garfield', 'Garfield', 
-#                'Spokane', 'Spokane', 'Spokane', 'Walla Walla', 'Walla Walla', 'Walla Walla', 
-#                'Whitman', 'Whitman', 'Whitman'],
-#     'Tillage': ['ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed', 
-#                 'ConventionalTill', 'MinimumTill', 'NoTill-DirectSeed'],
-#     'relative_area_target': [11.0, 4.0, 85.0,
-#                              28.4053, 35.9711, 35.6236,
-#                              26.4930, 34.5935, 38.9135,
-#                              46.2297, 42.3351, 11.4352,
-#                              28.8248, 65.3643, 5.8109,
-#                              24.3147, 49.0551, 26.6302]})
-
-
-
 
 # Assume 'df' is your original DataFrame and 'target_relative_area' is as defined.
 
@@ -247,9 +240,9 @@ for county in counties:
                 }
             )
 
-            # Update columns from 'ResidueCov' to 'sti_S1_prom_p100'
+            # Update columns from 'fr_pred' to 'sti_S1_prom_p100'
             columns_to_copy = df.columns[
-                df.columns.get_loc("ResidueCov") : df.columns.get_loc(
+                df.columns.get_loc("fr_pred") : df.columns.get_loc(
                     "sti_S1_prom_p100"
                 )
                 + 1
@@ -317,4 +310,4 @@ print(
 )
 # -
 
-df.to_csv(path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2022.csv", index=False)
+df.to_csv(path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2012.csv", index=False)

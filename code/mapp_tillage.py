@@ -66,18 +66,16 @@ def pred_fr(df):
     X = pd.concat(
         [
             df["cdl_cropType"],
-            df["min_NDTI_S0"],
-            df["min_NDTI_S1"],
             x_imagery_pca,
         ],
         axis=1,
     )
     X.columns = X.columns.astype(str)
     y_preds = fr_classifier.predict(X)
-    df["ResidueCov"] = y_preds
+    df["fr_pred"] = y_preds
     cols = list(df.columns)
     # Move the merged column to the 4th position
-    cols.insert(3, cols.pop(cols.index("ResidueCov")))
+    cols.insert(3, cols.pop(cols.index("fr_pred")))
     df = df[cols]
     return df
 data_2022 = pred_fr(data_2022)
@@ -175,7 +173,9 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
 
 # +
 # Load best fr classifer
-tillage_classifier = joblib.load(path_to_data + "best_models/best_tillage_classifier.pkl")
+tillage_classifier = joblib.load(
+    path_to_data + "best_models/best_tillage_classifier_config2.pkl"
+)
 
 # Load the saved scaler for fr
 scaler = joblib.load(path_to_data + "best_models/tillage_scaler_model.pkl")
@@ -194,16 +194,14 @@ def pred_tillage(df):
     X = pd.concat(
         [
             df["cdl_cropType"],
-            df["min_NDTI_S0"],
-            df["min_NDTI_S1"],
-            df["ResidueCov"],
+            df["fr_pred"],
             x_imagery_pca,
         ],
         axis=1,
     )
 
     to_replace = {"0-15%": 1, "16-30%": 2, ">30%": 3}
-    X["ResidueCov"] = X["ResidueCov"].replace(to_replace)
+    X["fr_pred"] = X["fr_pred"].replace(to_replace)
     X
     X.columns = X.columns.astype(str)
     y_preds = tillage_classifier.predict(X)
@@ -236,19 +234,24 @@ mapped_2012.to_csv(
 mapped_2012 = pd.read_csv(
     path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2012.csv"
 )
+
 mapped_2017 = pd.read_csv(
     path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2017.csv"
 )
+
 mapped_2022 = pd.read_csv(
     path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2022.csv"
 )
-
-shpfile_2022 = gpd.read_file(path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2022.shp")
-shpfile_2017 = gpd.read_file(path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2017.shp")
-shpfile_2012 = gpd.read_file(path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2012.shp")
-
 # -
-
+shpfile_2022 = gpd.read_file(
+    path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2022.shp"
+)
+shpfile_2017 = gpd.read_file(
+    path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2017.shp"
+)
+shpfile_2012 = gpd.read_file(
+    path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2012.shp"
+)
 
 
 # +
@@ -289,8 +292,8 @@ path_to_plots = (
 )
 
 
-mapped_df = mapped_2017
-shfile_df = shpfile_2017
+mapped_df = mapped_2022
+shfile_df = shpfile_2022
 # Merge mapped_2012 with shpfile_2012 geometry column
 mapped_df = mapped_df.merge(
     shfile_df[["pointID", "geometry"]], on="pointID", how="left"
@@ -384,6 +387,15 @@ year = mapped_df["year"].iloc[0]
 plt.savefig(path_to_plots + f"mapping/{year}_map.png", dpi=500, bbox_inches="tight")
 
 plt.show()
+# -
+
+gdf
+
+gdf_whitman = gdf.loc[gdf["County"] == "Whitman"]
+
+cols = ["pointID", "Tillage", "year",
+        "County", "fr_pred", "cdl_cropType", "geometry"]
+gdf_whitman[cols].to_file(path_to_data + "mapped_2022_gpd.shp")
 
 # +
 import matplotlib.pyplot as plt
@@ -576,17 +588,8 @@ import seaborn as sns
 import numpy as np
 from scipy.stats import pearsonr
 from matplotlib.font_manager import FontProperties
-
-
-# Define custom colors for counties
-custom_colors = {
-    "Asotin": "#bc4b51",  # Example colors
-    "Columbia": "#5b8e7d",
-    "Garfield": "#f4a259",
-    "Spokane": "#2ec4b6",
-    "Walla Walla": "#6a4c93",
-    "Whitman": "#1c1c1c",
-}
+from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
 
 
 # Step 1: Merge USDA stats with mapped stats for comparison
@@ -596,9 +599,26 @@ comparison_df = pd.merge(
     on=["County", "Year", "Tillage"],
     suffixes=("_usda", "_mapped"),
 )
-# Ensure 'County' and 'Tillage' columns are categorical
-comparison_df["County"] = pd.Categorical(comparison_df["County"])
-comparison_df["Tillage"] = pd.Categorical(comparison_df["Tillage"])
+
+# Define custom colors for counties
+custom_colors = {
+    "Asotin": "#88b9d9",
+    "Columbia": "#e07a5f",
+    "Garfield": "#3d405b",
+    "Spokane": "#5f797b",
+    "Walla Walla": "#81b29a",
+    "Whitman": "#f2cc8f",
+}
+
+# Define custom markers for Tillage types
+custom_markers = {
+    "CT": "^",
+    "MT": "s",
+    "NT": "X",
+}
+
+# Your existing data preparation code...
+# [Assuming 'comparison_df' is already prepared]
 
 # Create a scatter plot for each year
 years = [2012, 2017, 2022]
@@ -623,27 +643,24 @@ for i, year in enumerate(years):
         style="Tillage",
         ax=axes[i],
         s=500,  # Size of points
-        hue_order=sorted(
-            comparison_df["County"].unique()
-        ),  # Ensure consistent hue order
+        hue_order=sorted(comparison_df["County"].unique()),
         style_order=sorted(comparison_df["Tillage"].unique()),
-        palette=custom_colors  # Ensure consistent style order
+        markers=custom_markers,
+        palette=custom_colors,
     )
 
     # Set titles and labels
-    axes[i].set_title(f"{year}", fontsize=48)
+    axes[i].set_title(f"{year}", fontsize=40)
     axes[i].set_xlabel("USDA Relative Area", fontsize=40)
-    axes[i].set_ylabel(
-        "Mapped Relative Area", fontsize=40 if i == 0 else 0
-    )  # Only show y-label on the first plot
+    axes[i].set_ylabel("Mapped Relative Area", fontsize=40 if i == 0 else 0)
 
     # Add 45-degree line
-    lims = [0, 1]  # Assuming the relative areas range from 0 to 1
+    lims = [0, 1]
     axes[i].plot(lims, lims, "--", color="gray", linewidth=2)
 
     # Set the same ticks for x and y axes (every 0.2)
-    axes[i].set_xticks(np.arange(0, 1.2, 0.2))  # x-axis ticks every 0.2
-    axes[i].set_yticks(np.arange(0, 1.2, 0.2))  # y-axis ticks every 0.2
+    axes[i].set_xticks(np.arange(0, 1.2, 0.2))
+    axes[i].set_yticks(np.arange(0, 1.2, 0.2))
 
     # Calculate Pearson correlation
     corr, _ = pearsonr(year_df["Relative_area_usda"], year_df["Relative_area_mapped"])
@@ -659,29 +676,57 @@ for i, year in enumerate(years):
     )
 
 # Remove individual legends from each subplot
-handles, labels = axes[0].get_legend_handles_labels()
 for ax in axes:
     ax.legend_.remove()
 
+# Create custom legend handles for Counties (colors)
+county_handles = [
+    Patch(color=custom_colors[county], label=county)
+    for county in sorted(custom_colors.keys())
+]
 
-bold_font = FontProperties(weight='bold', size=36)
+# Create custom legend handles for Tillage types (markers)
+tillage_handles = [
+    Line2D(
+        [0],
+        [0],
+        marker=custom_markers[tillage],
+        color="black",
+        linestyle="",
+        markersize=20,  # Adjust marker size as needed
+        label=tillage,
+    )
+    for tillage in sorted(custom_markers.keys())
+]
 
-# Create a single legend on the right outside the plot, with larger legend shapes
-legend = fig.legend(
-    handles,
-    labels,
-    loc="center right",
+# Add the County legend
+legend1 = fig.legend(
+    handles=county_handles,
+    title="County",
+    loc="upper right",
+    bbox_to_anchor=(0.94, 0.9),
     fontsize=32,
     title_fontsize=36,
-    title="",
-    scatterpoints=1,  # Increases the size of the legend shapes
-    markerscale=4,  # Scales the size of the shapes
+    markerscale=2,
 )
-# Make the title bold
-legend.set_title(legend.get_title().get_text(), prop={"weight": "bold"})
 
-# Adjust layout to give space for the legend
-plt.subplots_adjust(right=0.85)
+# Add the Tillage legend
+legend2 = fig.legend(
+    handles=tillage_handles,
+    title="Tillage",
+    loc="upper right",
+    bbox_to_anchor=(0.91, 0.4),
+    fontsize=32,
+    title_fontsize=36,
+    markerscale=1,
+)
+
+# Make the legend titles bold
+legend1.get_title().set_fontweight("bold")
+legend2.get_title().set_fontweight("bold")
+
+# Adjust layout to give space for the legends
+plt.subplots_adjust(right=0.8)
 
 # Save the plot as a high-resolution image
 plt.savefig(
@@ -697,6 +742,10 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.patches import Patch
+from matplotlib.font_manager import FontProperties
+
+# Define bold font properties for legend titles
+bold_font = FontProperties(weight="bold", size=24)
 
 # Load your data
 # Adjust the path
@@ -795,7 +844,7 @@ tillage_legend = ax.legend(
     loc="upper left",
     bbox_to_anchor=(1, 1),  # Adjust to move it into the right margin
     fontsize=24,
-    title_fontsize = 24
+    title_fontproperties=bold_font,  # Make title bold
 )
 
 year_legend_elements = [
@@ -810,7 +859,7 @@ year_legend = ax.legend(
     loc="upper left",
     bbox_to_anchor=(1, 0.55),  # Adjust to move it into the right margin
     fontsize=24,
-    title_fontsize = 24
+    title_fontproperties=bold_font,  # Make title bold
 )
 
 # Add the tillage legend back to the plot so both appear

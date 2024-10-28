@@ -33,7 +33,9 @@ shpfile_filtered_2022 = gpd.read_file(
     path_to_data + "GIS_Data/acc_assessment/WSDA_2022_groundtruth_filtered.shp"
 )
 
-test_df = pd.read_csv(path_to_data + "accuracy_assessment_data/X_test_y_test_pred.csv")
+test_df_1 = pd.read_csv(path_to_data + "accuracy_assessment_data/X_test_y_test_pred_1.csv")
+test_df_2 = pd.read_csv(path_to_data + "accuracy_assessment_data/X_test_y_test_pred_2.csv")
+test_df_3 = pd.read_csv(path_to_data + "accuracy_assessment_data/X_test_y_test_pred_3.csv")
 
 shpfile_2122 = gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/final_shp_2122.shp")
 shpfile_2223 = gpd.read_file(path_to_data + "GIS_Data/final_shpfiles/final_shp_2223.shp")
@@ -44,19 +46,22 @@ mapped_2022 = mapped_2022.loc[
     mapped_2022["pointID"].isin(shpfile_filtered_2022["pointID"])
 ]
 
-test_df = pd.merge(
-    test_df, ground_merged[["pointID", "ExactAcres"]], on="pointID", how="left"
+test_df_1 = pd.merge(
+    test_df_1, ground_merged[["pointID", "ExactAcres"]], on="pointID", how="left"
 )
-# -
-
-test_df
+test_df_2 = pd.merge(
+    test_df_2, ground_merged[["pointID", "ExactAcres"]], on="pointID", how="left"
+)
+test_df_3 = pd.merge(
+    test_df_3, ground_merged[["pointID", "ExactAcres"]], on="pointID", how="left"
+)
 
 # +
 import pandas as pd
 import numpy as np
 
 # Load the sampled and non-sampled dataframes
-sampled_df = test_df
+sampled_df = test_df_2
 
 non_sampled_df = mapped_2022
 
@@ -132,10 +137,10 @@ for cls in classes:
                 beta_sum_non_sampled += row["ExactAcres"]
 
     # Numerator: Sum of sampled + non-sampled correctly classified areas
-    numerator = alpha_beta_sum_sampled + alpha_beta_sum_non_sampled
+    numerator = alpha_beta_sum_sampled #+ alpha_beta_sum_non_sampled
 
     # Denominator: Sum of all areas predicted as `cls`
-    denominator = beta_sum_sampled + beta_sum_non_sampled
+    denominator = beta_sum_sampled #+ beta_sum_non_sampled
 
     # User's accuracy for class `cls`
     users_accuracy[cls] = numerator / denominator if denominator > 0 else 0
@@ -225,12 +230,11 @@ variance_overall_accuracy
 # +
 import numpy as np
 
-# Given overall accuracy and variance of overall accuracy
-overall_accuracy = 85  # Example overall accuracy
-variance_overall_accuracy = variance_overall_accuracy  # Calculated variance
-
 # Step 1: Calculate the standard error (SE)
-standard_error = np.sqrt(variance_overall_accuracy)
+
+overall_accuracy = round(overall_accuracy, 2) 
+
+standard_error = np.sqrt(variance_overall_accuracy) * 0.01
 
 # Step 2: Determine the critical value (for 95% confidence interval)
 z_alpha_over_2 = 1.96  # For 95% confidence
@@ -243,3 +247,6 @@ print("standard_error", standard_error)
 # Display the confidence interval
 confidence_interval = (lower_bound, upper_bound)
 print("Confidence interval:", confidence_interval)
+# -
+
+

@@ -37,6 +37,18 @@ import json
 # from google.colab import drive
 # drive.mount('/content/drive')
 
+# +
+import geopandas as gpd
+path_to_data = "/Users/aminnorouzi/Library/CloudStorage/OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/Tillage_Mapping/Data/field_level_data/mapping_data/2017/"
+
+df = gpd.read_file(path_to_data + "WSDA_2017.shp")
+df.head(4)
+# -
+
+whtmn = df.loc[df['County'] == "Whitman"]
+clmbia = df.loc[df["County"] == "Columbia"]
+whtmn.Acres.sum(), clmbia.Acres.sum()
+
 # + [markdown] id="dl5KSrInfIGI"
 # #### Functions
 
@@ -871,11 +883,9 @@ startYear = 2011
 endYear = 2012
 
 # +
-path_to_data = (
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/Projects/"
-    "Tillage_Mapping/Data/GIS_Data/2017_2017_wsda"
-)
+path_to_data = ("/Users/aminnorouzi/Library/CloudStorage/"
+                "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+                "Projects/Tillage_Mapping/Data/GIS_Data/2012_2017_wsda/")
 
 gpd_2012 = gpd.read_file(path_to_data + "WSDA_2012.shp")
 gpd_2017 = gpd.read_file(path_to_data + "WSDA_2017.shp")
@@ -899,19 +909,7 @@ gpd_df_2017["CropType"].unique()
 gpd_df_2012 = gpd_2012.loc[gpd_2012["County"].isin(eastern_counties)]
 gpd_df_2012["CropType"].unique()
 
-# selected_crops = ['Wheat', 'Wheat Fallow',
-#        'Fallow, Idle', 'Fallow', 'Grass Hay',
-#        'Pea, Green', 'Wildlife Feed', 'Alfalfa Hay', 'Corn, Field', 'Nursery, Ornamental',
-#        'Alfalfa/Grass Hay', 'Rye', 'Fallow, Tilled', 'Barley', 'Chickpea', 'Pea, Dry',
-#        'Barley Hay', 'Canola', 'Potato', 'Timothy',
-#        'Corn Seed', 'Triticale', 'Bean, Dry', 'Sugar Beet Seed',
-#        'Bluegrass Seed', 'Oat', 'Pea Seed',
-#        'Corn, Sweet', 'Sunflower', 'Oat Hay',
-#        'Leek', 'Market Crops', 'Onion', 'Sorghum', 'Buckwheat',
-#        'Green Manure', 'Lentil', 'Mustard', 'Pumpkin', 'Triticale Hay', 'Flax',
-#        'Grass Seed, Other', 'Sudangrass', 'Cereal Grain, Unknown',
-#        'Sunflower Seed', 'Legume Cover',
-#        'Bromegrass Seed']
+
 selected_crops = [
     "Wheat",
     "Wheat Fallow",
@@ -940,6 +938,55 @@ gpd_df_2012_filtered = gpd_df_2012.loc[gpd_df_2012["CropType"].isin(selected_cro
 gpd_df_filtered.groupby(["County"])["ExactAcres"].sum()
 
 gpd_df_filtered = gpd_df_2017_filtered
+
+# +
+All_crops = ['Apple', 'Sugar Beet', 'Wheat', 'Fallow', 'Grape, Wine',
+       'Corn, Field', 'Grape, Juice', 'Onion', 'Potato', 'Cherry', 'Wheat Fallow', 'Corn, Sweet',
+       'Pea, Green', 'Alfalfa Hay', 'Grass Hay', 'Hops', 'Fallow, Idle', 'Market Crops', 'Blueberry',
+       'Bluegrass Seed', 'Carrot', 'Mint', 'Apricot', 'Yellow Mustard', 'Driving Range', 'Buckwheat', 'Walnut',
+       'Nursery, Ornamental', 'Alfalfa/Grass Hay', 'Pea Seed', 'Timothy',
+       'Sorghum', 'Poplar', 'Nursery, Orchard/Vineyard', 'Pear', 'Caneberry',
+       'Grape, Table', 'Marijuana', 'Asparagus', 'Triticale',
+       'Nectarine/Peach', 'Plum', 'Bean Seed', 'Sudangrass', 'Watermelon',
+       'Oat Hay', 'Triticale Hay', 'Strawberry', 'Pumpkin', 'Bean, Green',
+       'Barley', 'Bean, Dry', 'Clover/Grass Hay', 'Silviculture', 'Rye',
+       'Kale', 'Grape, Unknown', 'Medicinal Herb', 'Fallow, Tilled',
+       'Sunflower', 'Sugar Beet Seed', 'Canola', 'Corn Seed',
+       'Onion Seed', 'Cilantro Seed', 'Sod Farm',
+       'Sunflower Seed', 'Pea, Dry', 'Barley Hay', 'Alfalfa Seed',
+       'Filbert', 'Squash', 'Grass Seed, Other', 'Chickpea',
+       'Radish Seed', 'Alkali Bee Bed', 'Carrot Seed', 'Pepper',
+       'Vegetable, Unknown', 'Mustard', 'Nursery, Lavender', 'Beet Seed',
+       'Spinach', 'Oat', 'Potato Seed', 'Green Manure', 'Leek',
+       'Ryegrass Seed', 'Corn, Unknown', 'Melon, Unknown', 'Fescue Seed',
+       'Legume Cover', 'Flax Seed', 'Chestnut', 'Cabbage',
+       'Reclamation Seed', 'Nursery, Silviculture', 'Soybean',
+       'Clover Seed', 'Yarrow Seed', 'Christmas Tree', 'Dill', 'Rosemary',
+       'Bromegrass Seed', 'Cantaloupe', 'Lentil', 'Flax',
+       'Cereal Grain, Unknown', 'Rye Hay', 'Cranberry']
+
+gpd_df_2017_all_crops = gpd_df_2017.loc[gpd_df_2017["CropType"].isin(All_crops)]
+gpd_df_2012_all_crops = gpd_df_2012.loc[gpd_df_2012["CropType"].isin(All_crops)]
+# -
+
+gpd_df_2017_filtered["Acres"].sum() / gpd_df_2017_all_crops["Acres"].sum()
+
+gpd_df_2017['CropType'].unique()
+
+# +
+gpd_df_2017_all_crops.groupby("CropType")["Acres"].sum()
+
+# Group by 'cropType' and sum 'acres'
+grouped = gpd_df_2017_all_crops.groupby("CropType")["Acres"].sum()
+
+# Calculate the total acres
+total_acres = grouped.sum()
+
+# Calculate the percentage of acres for each crop type
+percentage = (grouped / total_acres) * 100
+# -
+
+percentage
 
 # +
 # Split shapefile into shapefiles with smaller numbers of polygons
