@@ -569,62 +569,57 @@ best_rf
 # Plot confusion matrix of the test set
 
 # +
+## **********
 ## Check sub-classes for misclassified instances of the test set
+## **********
+
 y_test_ = pd.DataFrame(y_test).copy()
+y_test_["pointID"] = y_test_.index
 y_test_["y_pred"] = y_pred
 y_test_["residue_type"] = X_test["cdl_cropType"]
+y_test_["WhereInRan"] = lsat_data.loc[y_test_.index.to_list()][
+    "WhereInRan"
+]  # Directly add WhereInRan values
+
+
+# Filter for misclassified instances
 wrongs = y_test_.loc[y_test_["ResidueCov"] != y_test_["y_pred"]]
-wrong_fr_range_dict = (
-    wrongs.groupby(["ResidueCov", "y_pred", "residue_type"])
-    .apply(lambda x: x.index.tolist())
-    .to_dict()
-)
-
-wrong_fr_dic = {}
-for key, value in wrong_fr_range_dict.items():
-    test_filtered = lsat_data.loc[lsat_data.index.isin(value)]
-    wrong_fr_dic[key] = test_filtered["WhereInRan"].value_counts()
-
-wrong_fr_dic
 
 # Create a list to store each row as a dictionary
 rows = []
 
-# Iterate through the dictionary and unpack each entry into rows
-for (residue_cov, y_pred_, residue_type), where_in_ran_counts in wrong_fr_dic.items():
-    if isinstance(
-        where_in_ran_counts, pd.Series
-    ):  # Check if where_in_ran_counts has values
-        for where_in_ran, count in where_in_ran_counts.items():
-            rows.append(
-                {
-                    "ResidueCov": residue_cov,
-                    "y_pred": y_pred_,
-                    "residue_type": residue_type,
-                    "WhereInRan": where_in_ran,
-                    "Count": count,
-                }
-            )
-    else:
-        # Handle cases with empty lists
-        rows.append(
-            {
-                "ResidueCov": residue_cov,
-                "y_pred": y_pred_,
-                "residue_type": residue_type,
-                "WhereInRan": None,
-                "Count": 0,
-            }
-        )
+# Populate the rows list with misclassified data
+for _, row in wrongs.iterrows():
+    rows.append(
+        {
+            "pointID": row["pointID"],
+            "ResidueCov": row["ResidueCov"],
+            "y_pred": row["y_pred"],
+            "residue_type": row["residue_type"],
+            "WhereInRan": row["WhereInRan"],
+        }
+    )
 
 # Convert the list of rows into a DataFrame
-df_wrong_fr = pd.DataFrame(rows)
+df_wrong = pd.DataFrame(rows)
 
-# Display the resulting DataFrame
-df_wrong_fr.to_csv(
+# Replace residue_type and fr_pred values with the mappings
+mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
+df_wrong["residue_type"] = df_wrong["residue_type"].replace(mapping_residuetype_dict)
+
+mapping_fr_dict = {
+    1: "0-15%",  # Adjust according to your residue classes
+    2: "16-30%",
+    3: ">30%",
+}
+df_wrong["ResidueCov"] = df_wrong["ResidueCov"].replace(mapping_fr_dict)
+df_wrong["y_pred"] = df_wrong["y_pred"].replace(mapping_fr_dict)
+
+df_wrong.to_csv(
     "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)"
-    "/Ph.D/Projects/Tillage_Mapping/final_results/wrong_df_fr.csv", index=False
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "Projects/Tillage_Mapping/final_results/" + "wrong_df_fr.csv",
+    index=False,
 )
 
 # +
@@ -1023,10 +1018,6 @@ plt.show()
 # -
 
 save_test_df(X_test_nocrop, y_test, y_pred, best_model_1, 1)
-
-y_test
-
-df_wrong
 
 # +
 ## **********
