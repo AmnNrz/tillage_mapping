@@ -568,59 +568,24 @@ best_rf
 
 # Plot confusion matrix of the test set
 
-# +
-## **********
-## Check sub-classes for misclassified instances of the test set
-## **********
+y_test_ = pd.DataFrame(y_test).copy() 
+y_test_['y_pred'] = y_pred
+wrongs = y_test_.loc[y_test_['ResidueCov'] != y_test_['y_pred']]
+wrong_fr_range_dict = wrongs.groupby(["ResidueCov", "y_pred"]).apply(lambda x: x.index.tolist()).to_dict()
 
-y_test_ = pd.DataFrame(y_test).copy()
-y_test_["pointID"] = y_test_.index
-y_test_["y_pred"] = y_pred
-y_test_["residue_type"] = X_test["cdl_cropType"]
-y_test_["WhereInRan"] = lsat_data.loc[y_test_.index.to_list()][
-    "WhereInRan"
-]  # Directly add WhereInRan values
+wrong_fr_range_dict
+
+lsat_data.loc[lsat_data.index.isin([328, 21, 222, 677, 154])]
+
+wrong_fr_dic = {}
+for key, value in wrong_fr_range_dict.items():
+    print(key)
+    test_filtered = lsat_data.loc[lsat_data.index.isin(value)]
+    wrong_fr_dic[key] = test_filtered["WhereInRan"].value_counts()
 
 
-# Filter for misclassified instances
-wrongs = y_test_.loc[y_test_["ResidueCov"] != y_test_["y_pred"]]
+wrong_fr_dic
 
-# Create a list to store each row as a dictionary
-rows = []
-
-# Populate the rows list with misclassified data
-for _, row in wrongs.iterrows():
-    rows.append(
-        {
-            "pointID": row["pointID"],
-            "ResidueCov": row["ResidueCov"],
-            "y_pred": row["y_pred"],
-            "residue_type": row["residue_type"],
-            "WhereInRan": row["WhereInRan"],
-        }
-    )
-
-# Convert the list of rows into a DataFrame
-df_wrong = pd.DataFrame(rows)
-
-# Replace residue_type and fr_pred values with the mappings
-mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
-df_wrong["residue_type"] = df_wrong["residue_type"].replace(mapping_residuetype_dict)
-
-mapping_fr_dict = {
-    1: "0-15%",  # Adjust according to your residue classes
-    2: "16-30%",
-    3: ">30%",
-}
-df_wrong["ResidueCov"] = df_wrong["ResidueCov"].replace(mapping_fr_dict)
-df_wrong["y_pred"] = df_wrong["y_pred"].replace(mapping_fr_dict)
-
-df_wrong.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "wrong_df_fr.csv",
-    index=False,
-)
 
 # +
 import numpy as np
@@ -694,38 +659,17 @@ plt.savefig(
 # Adjust layout and display
 plt.tight_layout()
 plt.show()
+# -
+
+y_test.value_counts()
+
+y_train.value_counts()
 
 # +
-# Overall Accuracy
-correct_predictions = np.trace(conf_matrix_fr)
-total_instances = np.sum(conf_matrix_fr)
-overall_accuracy = correct_predictions / total_instances
-print(f"\nOverall Accuracy: {overall_accuracy:.4f}")
+import joblib
 
-# Users' Accuracy (Precision)
-predicted_per_class = np.sum(conf_matrix_fr, axis=0)
-true_positives = np.diag(conf_matrix_fr)
-users_accuracy = true_positives / predicted_per_class
-users_accuracy = np.where(predicted_per_class != 0, users_accuracy, 0)
-
-print("\nUsers' Accuracy (Precision) for each class:")
-for idx, ua in enumerate(users_accuracy):
-    print(f"Class {idx}: {ua:.4f}")
-
-# Producers' Accuracy (Recall)
-actual_per_class = np.sum(conf_matrix_fr, axis=1)
-producers_accuracy = true_positives / actual_per_class
-producers_accuracy = np.where(actual_per_class != 0, producers_accuracy, 0)
-
-print("\nProducers' Accuracy (Recall) for each class:")
-for idx, pa in enumerate(producers_accuracy):
-    print(f"Class {idx}: {pa:.4f}")
-
-# +
-# import joblib
-
-# # Save the best model
-# joblib.dump(best_rf, path_to_data + "best_models/best_fr_classifier.pkl")
+# Save the best model
+joblib.dump(best_rf, path_to_data + "best_models/best_fr_classifier.pkl")
 # -
 
 # # Tillage Classification
@@ -874,20 +818,6 @@ print("Test set accuracy: ", accuracy_score(y_test, y_pred))
 print("Classification Report:\n", classification_report(y_test, y_pred))
 
 save_test_df(X_test_nocrop, y_test, y_pred, best_model_1, "1")
-
-# +
-# X_test_to_save = X_test[["cdl_cropType", "fr_pred"]].copy()
-# X_test_to_save['pointID'] = X_test_to_save.index
-# X_test_to_save["WhereInRan"] = lsat_data.loc[X_test_to_save.index.to_list()][
-#     "WhereInRan"
-# ] 
-# X_test_to_save["fr_act"] = lsat_data.loc[X_test_to_save.index.to_list()]["ResidueCov"]
-# X_test_to_save["tillage_act"] = lsat_data.loc[X_test_to_save.index.to_list()][
-#     "Tillage"
-# ]
-# X_test_to_save["tillage_pred"] = y_pred
-# legumes_in_test = X_test_to_save.loc[X_test_to_save['cdl_cropType'] == 2]
-# legumes_in_test.groupby(["tillage_act", "fr_act", "tillage_pred", "fr_pred"]).size()
 # -
 
 # Plot validation scores for base-line model
@@ -1033,65 +963,6 @@ plt.show()
 
 save_test_df(X_test_nocrop, y_test, y_pred, best_model_1, 1)
 
-# +
-## **********
-## Check sub-classes for misclassified instances of the test set
-## **********
-
-y_test_ = pd.DataFrame(y_test).copy()
-y_test_["pointID"] = y_test_.index
-y_test_["y_pred"] = y_pred
-y_test_["residue_type"] = X_test["cdl_cropType"]
-y_test_["fr_pred"] = X_test["fr_pred"]
-y_test_["fr_act"] = lsat_data.loc[y_test_.index.to_list()]["ResidueCov"]
-y_test_["WhereInRan"] = lsat_data.loc[y_test_.index.to_list()][
-    "WhereInRan"
-]  # Directly add WhereInRan values
-
-
-# Filter for misclassified instances
-wrongs = y_test_.loc[y_test_["Tillage"] != y_test_["y_pred"]]
-
-# Create a list to store each row as a dictionary
-rows = []
-
-# Populate the rows list with misclassified data
-for _, row in wrongs.iterrows():
-    rows.append(
-        {
-            "pointID": row["pointID"],
-            "Tillage": row["Tillage"],
-            "y_pred": row["y_pred"],
-            "residue_type": row["residue_type"],
-            "fr_pred": row["fr_pred"],
-            "fr_act": row["fr_act"],
-            "WhereInRan": row["WhereInRan"],
-        }
-    )
-
-# Convert the list of rows into a DataFrame
-df_wrong = pd.DataFrame(rows)
-
-# Replace residue_type and fr_pred values with the mappings
-mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
-df_wrong["residue_type"] = df_wrong["residue_type"].replace(mapping_residuetype_dict)
-
-mapping_fr_dict = {
-    1: "0-15%",  # Adjust according to your residue classes
-    2: "16-30%",
-    3: ">30%",
-}
-df_wrong["fr_pred"] = df_wrong["fr_pred"].replace(mapping_fr_dict)
-
-df_wrong.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "wrong_df_baseline.csv",
-    index=False,
-)
-
-
-# -
 
 # ## Train configuration 2
 
@@ -1105,24 +976,12 @@ def calculate_custom_weights(y, a):
         weight_dict[cls] = (1 / cnt) ** a / sum_weight
     return weight_dict
 
-def add_random_noise(series, noise_level=0.35):
-    np.random.seed(10)  # You can choose any integer value
-    noisy_series = series.copy()
-    categories = series.unique()
-    mask = np.random.rand(len(series)) < noise_level
-    noisy_series.loc[mask] = noisy_series[mask].apply(
-        lambda x: np.random.choice(categories[categories != x])
-    )
-    return noisy_series
-
 class CustomWeightedRF(BaseEstimator, ClassifierMixin):
-
     def __init__(
         self,
         n_estimators=100,
         max_depth=None,
         a=1,
-        sample_weight_mode="mixed", 
         max_features=None,
         min_samples_split=None,
         min_samples_leaf=None,
@@ -1136,7 +995,6 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         self.bootstrap = bootstrap
         self.min_samples_split = min_samples_split
         self.a = a
-        self.sample_weight_mode = sample_weight_mode  # Store the mode
         self.rf = RandomForestClassifier(
             n_estimators=self.n_estimators, max_depth=self.max_depth, **kwargs
         )
@@ -1147,36 +1005,24 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         target_weights = np.array([target_weights_dict[sample] for sample in y])
 
         if self.a == 0:
-            X_mod = X.copy()
-            X_mod = X_mod.drop(columns=["cdl_cropType"])
-            feature_weights = np.ones(X_mod.shape[0])
-            sample_weights = target_weights * feature_weights
+            X_mod = X.drop(columns=["cdl_cropType"])
+            feature_weights = np.ones(X_mod.shape[0]) 
         else:
-            # Calculate sample weights by combining target and feature weights
-            if self.sample_weight_mode == 'mixed':
-                # Mixed sample weights: target_weights * feature_weights
-                X_mod = X.copy()
-                feature_cols = ["cdl_cropType"]
-                feature_weights = np.zeros(X_mod.shape[0])
-                for col in feature_cols:
-                    feature_weights_dict = calculate_custom_weights(
-                        X_mod[col].values, self.a
-                    )
-                    feature_weights += X_mod[col].map(feature_weights_dict).values
-
-                sample_weights = target_weights * feature_weights
-            elif self.sample_weight_mode == 'tillage':
-                # Tillage sample weights: target_weights
-                X_mod = X.copy()
-                X_mod["cdl_cropType"] = add_random_noise(
-                    X_mod["cdl_cropType"], noise_level=0.55
+            X_mod = X.copy()
+            feature_cols = ["cdl_cropType"]
+            feature_weights = np.zeros(X_mod.shape[0])
+            for col in feature_cols:
+                feature_weights_dict = calculate_custom_weights(
+                    X_mod[col].values, self.a
                 )
-                sample_weights = target_weights
-            else:
-                raise ValueError("Invalid sample_weight_mode. Choose 'mixed' or 'tillage'.")
+                feature_weights += X_mod[col].map(feature_weights_dict).values
+
+        # Calculate sample weights by combining target and feature weights
+        sample_weights = target_weights * feature_weights
 
         # Fit the RandomForestClassifier with the computed weights and modified dataset
         self.rf.fit(X_mod, y, sample_weight=sample_weights)
+
         # Set the classes_ attribute
         self.classes_ = self.rf.classes_
 
@@ -1200,7 +1046,8 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
     def feature_importances_(self):
         return self.rf.feature_importances_
 
-def train_model(X_train, y_train, cv, param_grid, classifier):
+
+def train_model(X_train, y_train, X_test, y_test, cv, param_grid, classifier):
 
     # Define micro and macro scoring metrics
     scoring = {"accuracy": "accuracy", "f1_macro": "f1_macro"}
@@ -1208,7 +1055,7 @@ def train_model(X_train, y_train, cv, param_grid, classifier):
     grid_search = GridSearchCV(
         classifier,
         param_grid,
-        cv = 3,
+        cv=3,
         scoring=scoring,
         verbose=2,
         refit="f1_macro",
@@ -1304,89 +1151,25 @@ def plot_val_scores_by_a(grid_search, param_grid, X_test, y_test):
 
 
 # +
-## **********
-## Check sub-classes all instances of the test set
-## **********
-y_pred_train = best_model_2.predict(X_train)
-y_train_ = pd.DataFrame(y_train).copy()
-y_train_["pointID"] = y_train_.index
-y_train_["y_pred_train"] = y_pred_train
-y_train_["residue_type"] = X_train["cdl_cropType"]
-y_train_["fr_pred"] = X_train["fr_pred"]
-y_train_["fr_act"] = lsat_data.loc[y_train_.index.to_list()]["ResidueCov"]
-y_train_["WhereInRan"] = lsat_data.loc[y_train_.index.to_list()][
-    "WhereInRan"
-]  # Directly add WhereInRan values
-
-# Filter for misclassified instances
-# y_train_ = y_train_.loc[y_train_["Tillage"] != y_train_["y_pred_train"]]
-
-# Create a list to store each row as a dictionary
-rows = []
-
-# Populate the rows list with misclassified data
-for _, row in y_train_.iterrows():
-    rows.append(
-        {
-            "pointID": row["pointID"],
-            "Tillage": row["Tillage"],
-            "y_pred_train": row["y_pred_train"],
-            "residue_type": row["residue_type"],
-            "fr_pred": row["fr_pred"],
-            "fr_act": row["fr_act"],
-            "WhereInRan": row["WhereInRan"],
-        }
-    )
-
-# Convert the list of rows into a DataFrame
-train_df = pd.DataFrame(rows)
-
-# Replace residue_type and fr_pred values with the mappings
-mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
-train_df["residue_type"] = train_df["residue_type"].replace(mapping_residuetype_dict)
-
-mapping_fr_dict = {
-    1: "0-15%",  # Adjust according to your residue classes
-    2: "16-30%",
-    3: ">30%",
-}
-train_df["fr_pred"] = train_df["fr_pred"].replace(mapping_fr_dict)
-
-train_df.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "train_df_config_2.csv",
-    index=False,
-)
-# -
-
-train_df.groupby(["Tillage", "y_pred_train", "residue_type", "fr_pred", "fr_act"]).size().reset_index(name="Count")
-
-np.arange(2, 10, 2)
-
-np.arange(0, 1, 0.1)
-
-# +
 param_grid = {
-    "n_estimators": [50, 100, 200],
+    "n_estimators": [50, 100, 300],
     "max_features": ["log2", "sqrt"],
-    "max_depth": [2, 3, 4, 5, 6, 7, 8, 9, 10],
-    "min_samples_split": [5, 10, 15],
-    "min_samples_leaf": [2, 4, 6, 8],
+    "max_depth": [5, 40, 55],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
     "a": list(
         np.around(
-            np.concatenate((np.arange(0, 1, 0.1), np.arange(2, 10, 2))), decimals=1
+            np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3))), decimals=1
         )
     ),
-    "bootstrap": [True],
-    "sample_weight_mode": ["mixed", "tillage"],
+    "bootstrap": [True, False],
 }
 
 X_train_config_2 = X_train
 X_test_config_2 = X_test
 
 grid_search_2 = train_model(
-    X_train, y_train, 3, param_grid, CustomWeightedRF()
+    X_train, y_train, X_test, y_test, 3, param_grid, CustomWeightedRF()
 )
 # -
 
@@ -1397,27 +1180,22 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
-import pandas as pd
-import numpy as np
 
 # Extract cross-validation results
 cv_results_2 = grid_search_2.cv_results_
-
-# Filter out entries with param_sample_weight_mode equal to "tillage"
-filtered_indices = [
-    i
-    for i, param in enumerate(cv_results_2["param_sample_weight_mode"])
-    if param != "tillage"
-]
 
 # Initialize lists to hold all micro and macro precision scores
 accuracies = []
 f1_macros = []
 
-# Extract precision scores for each fold and parameter combination, excluding "tillage" entries
+# Number of CV folds
+n_splits = grid_search_2.cv
+
+# Extract precision scores for each fold and parameter combination
+# GridSearchCV stores split scores as split0_test_<scorer>, split1_test_<scorer>, etc.
 for i in range(grid_search_2.cv):
-    split_accuracy = cv_results_2[f"split{i}_test_accuracy"][filtered_indices]
-    split_f1_macro = cv_results_2[f"split{i}_test_f1_macro"][filtered_indices]
+    split_accuracy = cv_results_2[f"split{i}_test_accuracy"]
+    split_f1_macro = cv_results_2[f"split{i}_test_f1_macro"]
     accuracies.extend(split_accuracy)
     f1_macros.extend(split_f1_macro)
 
@@ -1434,13 +1212,13 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # Set global font sizes
 plt.rcParams.update(
     {
-        "font.size": 20,
-        "axes.titlesize": 22,
-        "axes.labelsize": 20,
-        "xtick.labelsize": 18,
-        "ytick.labelsize": 18,
-        "legend.fontsize": 18,
-        "figure.titlesize": 24,
+        "font.size": 20,  # Base font size
+        "axes.titlesize": 22,  # Font size for the title
+        "axes.labelsize": 20,  # Font size for the x and y labels
+        "xtick.labelsize": 18,  # Font size for x tick labels
+        "ytick.labelsize": 18,  # Font size for y tick labels
+        "legend.fontsize": 18,  # Font size for the legend
+        "figure.titlesize": 24,  # Font size for figure title
     }
 )
 
@@ -1454,7 +1232,7 @@ sns.boxplot(x="Score Type", y="Score", data=score_data_2, palette=custom_colors)
 # Set labels and axis limits
 plt.ylabel("Validation Accuracy")
 plt.xlabel("")
-plt.ylim(0.5, 1)
+plt.ylim(0.5, 1)  # Set y-axis limits
 
 # Set y-axis ticks every 0.05
 plt.yticks(np.arange(0.5, 1.05, 0.05))
@@ -1540,146 +1318,6 @@ plt.tight_layout()
 plt.show()
 # -
 
-best_hyperparameters = grid_search_2.best_params_
-print("Best hyperparameters:", best_hyperparameters)
-
-# +
-## **********
-## Check sub-classes all instances of the test set
-## **********
-
-y_test_ = pd.DataFrame(y_test).copy()
-y_test_["pointID"] = y_test_.index
-y_test_["y_pred"] = y_pred
-y_test_["residue_type"] = X_test["cdl_cropType"]
-y_test_["fr_pred"] = X_test["fr_pred"]
-y_test_["fr_act"] = lsat_data.loc[y_test_.index.to_list()]["ResidueCov"]
-y_test_["WhereInRan"] = lsat_data.loc[y_test_.index.to_list()][
-    "WhereInRan"
-]  # Directly add WhereInRan values
-
-# Filter for misclassified instances
-# y_test_ = y_test_.loc[y_test_["Tillage"] != y_test_["y_pred"]]
-
-# Create a list to store each row as a dictionary
-rows = []
-
-# Populate the rows list with misclassified data
-for _, row in y_test_.iterrows():
-    rows.append(
-        {
-            "pointID": row["pointID"],
-            "Tillage": row["Tillage"],
-            "y_pred": row["y_pred"],
-            "residue_type": row["residue_type"],
-            "fr_pred": row["fr_pred"],
-            "fr_act": row["fr_act"],
-            "WhereInRan": row["WhereInRan"],
-        }
-    )
-
-# Convert the list of rows into a DataFrame
-test_df = pd.DataFrame(rows)
-
-# Replace residue_type and fr_pred values with the mappings
-mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
-test_df["residue_type"] = test_df["residue_type"].replace(mapping_residuetype_dict)
-
-mapping_fr_dict = {
-    1: "0-15%",  # Adjust according to your residue classes
-    2: "16-30%",
-    3: ">30%",
-}
-test_df["fr_pred"] = test_df["fr_pred"].replace(mapping_fr_dict)
-
-test_df.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "test_df_config_2.csv",
-    index=False,
-)
-
-# +
-test_legume = df_wrong.loc[df_wrong['residue_type'] == "Canola"]
-test_legume = test_legume.groupby(["Tillage", "y_pred", "fr_act", "fr_pred"]).size().reset_index(
-    name="Count"
-)
-
-colnames = ["Tillage (true)", "Tillage (predicted)",
-            "$f_r$ (true)", "$f_r$ (predicted)", "Count"]
-test_legume.columns = colnames
-
-rename_tillage_dict = {
-    "ConventionalTill": "CT",
-    "MinimumTill": "MT",
-    "NoTill-DirectSeed": "NT",
-}
-
-test_legume["Tillage (true)"] = test_legume["Tillage (true)"].replace(rename_tillage_dict)
-test_legume["Tillage (predicted)"] = test_legume["Tillage (predicted)"].replace(
-    rename_tillage_dict
-)
-test_legume
-sorted_df = test_legume.sort_values(by=[test_legume.columns[0], test_legume.columns[1]])
-sorted_df
-
-# +
-## **********
-## Check sub-classes for misclassified instances of the test set
-## **********
-
-y_test_ = pd.DataFrame(y_test).copy()
-y_test_["pointID"] = y_test_.index
-y_test_["y_pred"] = y_pred
-y_test_["residue_type"] = X_test["cdl_cropType"]
-y_test_["fr_pred"] = X_test["fr_pred"]
-y_test_["fr_act"] = lsat_data.loc[y_test_.index.to_list()]["ResidueCov"]
-y_test_["WhereInRan"] = lsat_data.loc[y_test_.index.to_list()][
-    "WhereInRan"
-]  # Directly add WhereInRan values
-
-# Filter for misclassified instances
-wrongs = y_test_.loc[y_test_["Tillage"] != y_test_["y_pred"]]
-
-# Create a list to store each row as a dictionary
-rows = []
-
-# Populate the rows list with misclassified data
-for _, row in wrongs.iterrows():
-    rows.append(
-        {
-            "pointID": row["pointID"],
-            "Tillage": row["Tillage"],
-            "y_pred": row["y_pred"],
-            "residue_type": row["residue_type"],
-            "fr_pred": row["fr_pred"],
-            "fr_act": row["fr_act"],
-            "WhereInRan": row["WhereInRan"],
-        }
-    )
-
-# Convert the list of rows into a DataFrame
-df_wrong = pd.DataFrame(rows)
-
-# Replace residue_type and fr_pred values with the mappings
-mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
-df_wrong["residue_type"] = df_wrong["residue_type"].replace(mapping_residuetype_dict)
-
-mapping_fr_dict = {
-    1: "0-15%",  # Adjust according to your residue classes
-    2: "16-30%",
-    3: ">30%",
-}
-df_wrong["fr_pred"] = df_wrong["fr_pred"].replace(mapping_fr_dict)
-
-df_wrong.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "wrong_df_config_2.csv",
-    index=False,
-)
-# -
-
 # Plot a ~ validation scores
 
 # +
@@ -1689,213 +1327,123 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.patches as mpatches
 
-# Extract cross-validation results
-cv_results_2 = grid_search_2.cv_results_
 
-a_values = param_grid["a"]
+def plot_val_scores_by_a(grid_search, param_grid, grid_search_1):
+    # Extract cross-validation results
+    cv_results = grid_search.cv_results_
 
-# Filter out entries with param_sample_weight_mode equal to "tillage"
-filtered_indices_for_tillage = [
-    i
-    for i, param in enumerate(cv_results_2["param_sample_weight_mode"])
-    if param == "tillage"
-]
+    # Get the `a` values and the corresponding validation accuracies
+    a_values = param_grid["a"]
+    f1_macros_by_a = {a: [] for a in a_values}
 
-filtered_indices_for_mixed = [
-    i
-    for i, param in enumerate(cv_results_2["param_sample_weight_mode"])
-    if param != "tillage"
-]
+    # Collect accuracies for each `a` value from cv_results
+    for i, a in enumerate(cv_results["param_a"]):
+        f1_macros_by_a[a].append(cv_results["mean_test_f1_macro"][i])
 
-f1_macros_by_a_tillage = {a: [] for a in a_values}
-f1_macros_by_a_mixed = {a: [] for a in a_values}
-# Extract precision scores for each fold and parameter combination, excluding "tillage" entries
-for i, a in enumerate(cv_results_2["param_a"]):
-    for j in range(grid_search_2.cv):
-        if i in filtered_indices_for_tillage:
-            f1_macros_by_a_tillage[a].append(cv_results_2[f"split{j}_test_f1_macro"][i])
-        if i in filtered_indices_for_mixed:
-            f1_macros_by_a_mixed[a].append(cv_results_2[f"split{j}_test_f1_macro"][i])
+    mean_scores_by_a = {a: np.mean(accs) for a, accs in f1_macros_by_a.items()}
+    max_a = max(mean_scores_by_a, key=mean_scores_by_a.get)
 
-mean_scores_by_a_mixed = {a: np.mean(accs) for a, accs in f1_macros_by_a_mixed.items()}
-max_a_mixed = max(mean_scores_by_a_mixed, key=mean_scores_by_a_mixed.get)
+    # Filter `a` for a = 0 and the a with best macro-averaged producer's accuracy
+    a_filtered = [0]
+    a_filtered.append(max_a)
 
-mean_scores_by_a_tillage = {a: np.mean(accs) for a, accs in f1_macros_by_a_tillage.items()}
-max_a_tillage = max(mean_scores_by_a_tillage, key=mean_scores_by_a_tillage.get)
+    # Prepare data for seaborn boxplot
+    box_data = []
+    for a in a_filtered:
+        for score in f1_macros_by_a[a]:
+            box_data.append(
+                {
+                    "Weighting exponent (a)": a,
+                    "f1_Macro": score,
+                }
+            )
 
+    # Add the Base-line boxplot from grid_search_1
+    cv_results_1 = grid_search_1.cv_results_
+    f1_macros_baseline = []
 
-# Prepare data for seaborn boxplot
-box_data = []
+    for i in range(grid_search_1.cv):
+        split_f1_macro = cv_results_1[f"split{i}_test_f1_macro"]
+        f1_macros_baseline.extend(split_f1_macro)
 
-a_filtered_mixed_0 = 0
-for score in f1_macros_by_a_mixed[a_filtered_mixed_0]:
-    box_data.append(
+    for score in f1_macros_baseline:
+        box_data.append(
+            {
+                "Weighting exponent (a)": "Baseline",
+                "f1_Macro": score,
+            }
+        )
+
+    df_box_data = pd.DataFrame(box_data)
+
+    # Ensure "Base-line" comes first by setting the category order
+    df_box_data["Weighting exponent (a)"] = pd.Categorical(
+        df_box_data["Weighting exponent (a)"],
+        categories=["Baseline", 0.0, max_a],
+        ordered=True,
+    )
+
+    # Set global font sizes
+    plt.rcParams.update(
         {
-            "Weighting exponent (a)": f"a = 0 mixed",
-            "f1_Macro": score,
+            "font.size": 14,  # Base font size
+            "axes.titlesize": 14,  # Font size for the title
+            "axes.labelsize": 14,  # Font size for the x and y labels
+            "xtick.labelsize": 14,  # Font size for x tick labels
+            "ytick.labelsize": 14,  # Font size for y tick labels
+            "legend.fontsize": 14,  # Font size for the legend
+            "figure.titlesize": 14,  # Font size for figure title
         }
     )
 
-for score in f1_macros_by_a_mixed[max_a_mixed]:
-    box_data.append(
-        {
-            "Weighting exponent (a)": f"best a mixed",
-            "f1_Macro": score,
-        }
+    # Define custom colors for Base-line, a = 0, and best a
+    custom_colors = {"Baseline": "#dd6e42", 0.0: "#e8dab2", max_a: "#4f6d7a"}
+
+    plt.figure(figsize=(4, 6), dpi=100)
+
+    # Use seaborn to plot the boxplot with the DataFrame
+    sns.boxplot(
+        x="Weighting exponent (a)",
+        y="f1_Macro",
+        data=df_box_data,
+        palette=custom_colors,
     )
 
+    # Set labels and axis limits
+    plt.ylabel("F1 Macro Score")
+    plt.xlabel("Weighting exponent (a)")
+    # plt.ylim(0.6, 1)  # Set y-axis limits
 
-# Filter `a` for best f1_macro of sample_weight_mode 'tillage'
+    # Set y-axis ticks every 0.05
+    plt.yticks(np.arange(0.6, 1.05, 0.05))
 
-for score in f1_macros_by_a_tillage[max_a_tillage]:
-    box_data.append(
-        {
-            "Weighting exponent (a)": f"best a tillage",
-            "f1_Macro": score,
-        }
+    # Add grid lines for each y tick
+    plt.grid(True, axis="y", linestyle="--", linewidth=0.7)
+
+    # Add vertical grid lines for Micro and Macro ticks on x-axis
+    plt.grid(True, axis="x", linestyle="--", linewidth=0.7)
+
+    # Create custom legend using patches with the same colors as box plots
+    base_patch = mpatches.Patch(color=custom_colors["Baseline"], label="Baseline")
+    accuracy_patch = mpatches.Patch(color=custom_colors[0.0], label="a = 0")
+    f1_macro_patch = mpatches.Patch(
+        color=custom_colors[max_a], label=f"Best a = {max_a}"
     )
 
+    # Add the custom legend to the plot
+    plt.legend(handles=[base_patch, accuracy_patch, f1_macro_patch], loc="upper right")
 
-# Add the Base-line boxplot from grid_search_1
-cv_results_1 = grid_search_1.cv_results_
-f1_macros_baseline = []
-for i in range(grid_search_1.cv):
-    split_f1_macro_baseline = cv_results_1[f"split{i}_test_f1_macro"]
-    f1_macros_baseline.extend(split_f1_macro_baseline)
-
-# Baseline scores
-for score in f1_macros_baseline:
-    box_data.append(
-        {
-            "Weighting exponent (a)": "Baseline",
-            "f1_Macro": score,
-        }
+    plt.savefig(
+        path_to_plots + "cross_validation_test/fig_a_accuracies_new.pdf",
+        format="pdf",
+        bbox_inches="tight",
+        dpi=300,
     )
-
-# Convert to DataFrame
-df_box_data = pd.DataFrame(box_data)
-
-# Ensure custom order for categories
-df_box_data["Weighting exponent (a)"] = pd.Categorical(
-    df_box_data["Weighting exponent (a)"],
-    categories=[
-        "Baseline",
-        f"a = 0 mixed",
-        f"best a tillage",
-        f"best a mixed"
-        
-    ],
-    ordered=True,
-)
-
-# Set global font sizes
-plt.rcParams.update(
-    {
-        "font.size": 14,  # Base font size
-        "axes.titlesize": 14,  # Font size for the title
-        "axes.labelsize": 14,  # Font size for the x and y labels
-        "xtick.labelsize": 14,  # Font size for x tick labels
-        "ytick.labelsize": 14,  # Font size for y tick labels
-        "legend.fontsize": 14,  # Font size for the legend
-        "figure.titlesize": 14,  # Font size for figure title
-    }
-)
-
-# Define custom colors
-custom_colors = {
-    "Baseline": "#dd6e42",
-    f"a = 0 mixed": "#e8dab2",
-    f"best a tillage": "#88c0d0",
-    f"best a mixed": "#4f6d7a"
-}
-
-plt.figure(figsize=(4, 6), dpi=100)
-
-# Plot boxplot with seaborn
-sns.boxplot(
-    x="Weighting exponent (a)",
-    y="f1_Macro",
-    data=df_box_data,
-    palette=custom_colors,
-    # showmeans = True
-)
-
-# Set labels and axis limits
-plt.ylabel("F1 Macro Score")
-plt.xlabel("Weighting exponent (a)")
-# Manually set custom x-axis ticks
-plt.xticks(
-    ticks=[0, 1, 2, 3],  # Adjusted tick positions
-    labels=["BL", "0 (T*F)", f"{max_a_tillage} (T)", f"{max_a_mixed} (T*F)"],
-    rotation=90,
-)
-
-# Add a vertical line to separate Baseline from other categories
-plt.axvline(
-    x=0.5, color="gray", linestyle="-", linewidth=1
-)  # Adjust position as needed
-plt.xlabel("Weighting exponent (a)", labelpad=10, loc="right")  # Move right
-
-plt.yticks(np.arange(0.3, 1.05, 0.05))
-plt.ylim(0.5, 0.9)  # Set y-axis limits
-
-# Add grid lines for each y tick
-plt.grid(True, axis="y", linestyle="--", linewidth=0.7)
-
-plt.savefig(
-    path_to_plots + "cross_validation_test/fig_a_accuracies_new.pdf",
-    format="pdf",
-    bbox_inches="tight",
-    dpi=300,
-)
-
-plt.show()
-# -
-
-# Calculate mean for each category
-mean_values = df_box_data.groupby("Weighting exponent (a)").mean()
-mean_values
-
-# +
-# # Now, to extract the best model where sample_weight_mode == "tillage"
-# def get_best_model_tillage(grid_search, param_grid, X_train, y_train):
-#     # Extract cross-validation results
-#     cv_results = grid_search.cv_results_
-
-#     # Create a DataFrame from cv_results for easier filtering
-#     results_df = pd.DataFrame(cv_results)
-
-#     # Filter rows where sample_weight_mode is 'tillage'
-#     tillage_df = results_df[results_df["param_sample_weight_mode"] == "tillage"]
-
-#     if tillage_df.empty:
-#         raise ValueError("No results found for sample_weight_mode = 'tillage'")
-
-#     # Find the index of the row with the highest mean_test_f1_macro
-#     best_index = tillage_df["mean_test_f1_macro"].idxmax()
-
-#     # Extract the best parameters
-#     best_params = {
-#         key.replace("param_", ""): value
-#         for key, value in results_df.loc[best_index].items()
-#         if key.startswith("param_")
-#     }
-
-#     print("Best parameters for sample_weight_mode='tillage':", best_params)
-
-#     # Instantiate the model with the best parameters
-#     best_model = grid_search.estimator.set_params(**best_params)
-
-#     # Fit the model on the entire training data
-#     best_model.fit(X_train, y_train)
-
-#     return best_model
+    plt.show()
 
 
-# # Example usage:
-# best_tillage_model = get_best_model_tillage(grid_search_2, param_grid, X_train, y_train)
-
-# # Now, `best_tillage_model` is your best model trained with sample_weight_mode='tillage'
+# Now you can call the updated function
+plot_val_scores_by_a(grid_search_2, param_grid, grid_search_1)
 # -
 
 save_test_df(X_test, y_test, y_pred, best_model_2, 2)
@@ -1959,11 +1507,10 @@ param_grid = {
         )
     ),
     "bootstrap": [True, False],
-    "sample_weight_mode": ["mixed"],
 }
 
 grid_search_3 = train_model(
-    X_train_config_3, y_train, 3, param_grid, CustomWeightedRF()
+    X_train_config_3, y_train, X_test_config_3, y_test, 3, param_grid, CustomWeightedRF()
 )
 
 # +
@@ -2417,6 +1964,10 @@ plt.savefig(
     dpi=300,
 )
 plt.show()
+# -
+
+conf_matrix_1
+
 
 # +
 import matplotlib.pyplot as plt

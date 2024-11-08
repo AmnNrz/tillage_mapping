@@ -1164,7 +1164,8 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
                     )
                     feature_weights += X_mod[col].map(feature_weights_dict).values
 
-                sample_weights = target_weights * feature_weights
+                # sample_weights = target_weights * feature_weights
+                sample_weights = target_weights
             elif self.sample_weight_mode == 'tillage':
                 # Tillage sample weights: target_weights
                 X_mod = X.copy()
@@ -1304,90 +1305,33 @@ def plot_val_scores_by_a(grid_search, param_grid, X_test, y_test):
 
 
 # +
-## **********
-## Check sub-classes all instances of the test set
-## **********
-y_pred_train = best_model_2.predict(X_train)
-y_train_ = pd.DataFrame(y_train).copy()
-y_train_["pointID"] = y_train_.index
-y_train_["y_pred_train"] = y_pred_train
-y_train_["residue_type"] = X_train["cdl_cropType"]
-y_train_["fr_pred"] = X_train["fr_pred"]
-y_train_["fr_act"] = lsat_data.loc[y_train_.index.to_list()]["ResidueCov"]
-y_train_["WhereInRan"] = lsat_data.loc[y_train_.index.to_list()][
-    "WhereInRan"
-]  # Directly add WhereInRan values
-
-# Filter for misclassified instances
-# y_train_ = y_train_.loc[y_train_["Tillage"] != y_train_["y_pred_train"]]
-
-# Create a list to store each row as a dictionary
-rows = []
-
-# Populate the rows list with misclassified data
-for _, row in y_train_.iterrows():
-    rows.append(
-        {
-            "pointID": row["pointID"],
-            "Tillage": row["Tillage"],
-            "y_pred_train": row["y_pred_train"],
-            "residue_type": row["residue_type"],
-            "fr_pred": row["fr_pred"],
-            "fr_act": row["fr_act"],
-            "WhereInRan": row["WhereInRan"],
-        }
-    )
-
-# Convert the list of rows into a DataFrame
-train_df = pd.DataFrame(rows)
-
-# Replace residue_type and fr_pred values with the mappings
-mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
-train_df["residue_type"] = train_df["residue_type"].replace(mapping_residuetype_dict)
-
-mapping_fr_dict = {
-    1: "0-15%",  # Adjust according to your residue classes
-    2: "16-30%",
-    3: ">30%",
-}
-train_df["fr_pred"] = train_df["fr_pred"].replace(mapping_fr_dict)
-
-train_df.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "train_df_config_2.csv",
-    index=False,
-)
-# -
-
-train_df.groupby(["Tillage", "y_pred_train", "residue_type", "fr_pred", "fr_act"]).size().reset_index(name="Count")
-
-np.arange(2, 10, 2)
-
-np.arange(0, 1, 0.1)
-
-# +
 param_grid = {
-    "n_estimators": [50, 100, 200],
+    "n_estimators": [50, 100, 300],
     "max_features": ["log2", "sqrt"],
-    "max_depth": [2, 3, 4, 5, 6, 7, 8, 9, 10],
-    "min_samples_split": [5, 10, 15],
-    "min_samples_leaf": [2, 4, 6, 8],
+    "max_depth": [5, 40, 55],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
     "a": list(
         np.around(
-            np.concatenate((np.arange(0, 1, 0.1), np.arange(2, 10, 2))), decimals=1
+            np.concatenate((np.arange(0, 1, 0.3), np.arange(2, 12, 3))), decimals=1
         )
     ),
-    "bootstrap": [True],
-    "sample_weight_mode": ["mixed", "tillage"],
+    "bootstrap": [True, False],
+    "sample_weight_mode": ['mixed', 'tillage']
 }
 
 X_train_config_2 = X_train
 X_test_config_2 = X_test
 
-grid_search_2 = train_model(
-    X_train, y_train, 3, param_grid, CustomWeightedRF()
-)
+y_train_mixed = y_train.astype(str) + "_" + X_train["cdl_cropType"].astype(str)
+y_test_mixed = y_test.astype(str) + "_" + X_test["cdl_cropType"].astype(str)
+
+from imblearn.over_sampling import SMOTENC
+
+smote_nc = SMOTENC(categorical_features=[0, 2], random_state=0)
+X_resampled, y_resampled = smote_nc.fit_resample(X, y)
+
+grid_search_2 = train_model(X_train, y_train_mixed, 3, param_grid, CustomWeightedRF())
 # -
 
 # Plot macro and micro validation scores
@@ -1479,6 +1423,9 @@ plt.show()
 
 # Plot confusion matrix of config 2
 
+y_pred
+y_test_mixed
+
 # +
 import numpy as np
 import matplotlib.pyplot as plt
@@ -1490,10 +1437,18 @@ from matplotlib.colors import LinearSegmentedColormap
 # Use the best estimator from grid search
 best_model_2 = grid_search_2.best_estimator_
 
+
+def remove_suffix(label):
+    return label.split("_")[0]
+
 # Predict on the test set
-y_pred = best_model_2.predict(X_test)
+y_pred_mixed = best_model_2.predict(X_test)
+# Apply the function to both y_test_mixed and y_pred
+y_test_mixed_cleaned = y_test_mixed.apply(remove_suffix)
+y_pred_cleaned = pd.Series(y_pred_mixed).apply(remove_suffix)
+
 # Compute the confusion matrix
-conf_matrix_2 = confusion_matrix(y_test, y_pred)
+conf_matrix_2 = confusion_matrix(y_test_mixed_cleaned, y_pred_cleaned)
 
 # Plotting parameters
 x_labels = ["CT", "MT", "NT"]  # Replace with your actual class names
@@ -1538,7 +1493,65 @@ plt.yticks([0.5 + i for i in range(len(y_labels))], y_labels, fontsize=24, rotat
 # Adjust layout and display
 plt.tight_layout()
 plt.show()
+
+# +
+## **********
+## Check sub-classes all instances of the train set
+## **********
+y_pred_train = best_model_2.predict(X_train)
+y_train_ = pd.DataFrame(y_train).copy()
+y_train_["pointID"] = y_train_.index
+y_train_["y_pred_train"] = y_pred_train
+y_train_["residue_type"] = X_train["cdl_cropType"]
+y_train_["fr_pred"] = X_train["fr_pred"]
+y_train_["fr_act"] = lsat_data.loc[y_train_.index.to_list()]["ResidueCov"]
+y_train_["WhereInRan"] = lsat_data.loc[y_train_.index.to_list()][
+    "WhereInRan"
+]  # Directly add WhereInRan values
+
+# Filter for misclassified instances
+# y_train_ = y_train_.loc[y_train_["Tillage"] != y_train_["y_pred_train"]]
+
+# Create a list to store each row as a dictionary
+rows = []
+
+# Populate the rows list with misclassified data
+for _, row in y_train_.iterrows():
+    rows.append(
+        {
+            "pointID": row["pointID"],
+            "Tillage": row["Tillage"],
+            "y_pred_train": row["y_pred_train"],
+            "residue_type": row["residue_type"],
+            "fr_pred": row["fr_pred"],
+            "fr_act": row["fr_act"],
+            "WhereInRan": row["WhereInRan"],
+        }
+    )
+
+# Convert the list of rows into a DataFrame
+train_df = pd.DataFrame(rows)
+
+# Replace residue_type and fr_pred values with the mappings
+mapping_residuetype_dict = {1: "Grain", 2: "Legume", 3: "Canola"}
+train_df["residue_type"] = train_df["residue_type"].replace(mapping_residuetype_dict)
+
+mapping_fr_dict = {
+    1: "0-15%",  # Adjust according to your residue classes
+    2: "16-30%",
+    3: ">30%",
+}
+train_df["fr_pred"] = train_df["fr_pred"].replace(mapping_fr_dict)
+
+train_df.to_csv(
+    "/Users/aminnorouzi/Library/CloudStorage/"
+    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+    "Projects/Tillage_Mapping/final_results/" + "train_df_config_2.csv",
+    index=False,
+)
 # -
+
+train_df.groupby(["Tillage", "y_pred_train", "residue_type", "fr_pred", "fr_act"]).size().reset_index(name="Count")
 
 best_hyperparameters = grid_search_2.best_params_
 print("Best hyperparameters:", best_hyperparameters)
@@ -1548,9 +1561,10 @@ print("Best hyperparameters:", best_hyperparameters)
 ## Check sub-classes all instances of the test set
 ## **********
 
-y_test_ = pd.DataFrame(y_test).copy()
+y_test_ = pd.DataFrame(y_test_mixed_cleaned).copy()
 y_test_["pointID"] = y_test_.index
-y_test_["y_pred"] = y_pred
+y_test_["Tillage"] = y_test_[0]
+y_test_["y_pred"] = y_pred_cleaned
 y_test_["residue_type"] = X_test["cdl_cropType"]
 y_test_["fr_pred"] = X_test["fr_pred"]
 y_test_["fr_act"] = lsat_data.loc[y_test_.index.to_list()]["ResidueCov"]
@@ -1672,12 +1686,12 @@ mapping_fr_dict = {
 }
 df_wrong["fr_pred"] = df_wrong["fr_pred"].replace(mapping_fr_dict)
 
-df_wrong.to_csv(
-    "/Users/aminnorouzi/Library/CloudStorage/"
-    "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
-    "Projects/Tillage_Mapping/final_results/" + "wrong_df_config_2.csv",
-    index=False,
-)
+# df_wrong.to_csv(
+#     "/Users/aminnorouzi/Library/CloudStorage/"
+#     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
+#     "Projects/Tillage_Mapping/final_results/" + "wrong_df_config_2.csv",
+#     index=False,
+# )
 # -
 
 # Plot a ~ validation scores
