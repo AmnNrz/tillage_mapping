@@ -26,15 +26,18 @@ path_to_data = ('/Users/aminnorouzi/Library/CloudStorage/'
 
 # +
 data_2012 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/2012_2017_2022/data_2012.csv"
+    path_to_data
+    + "MAPPING_DATA_2011_2012_2022/mapped_data/dat/2012_data.csv"
 )
 
 data_2017 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/2012_2017_2022/data_2017.csv"
+    path_to_data
+    + "MAPPING_DATA_2011_2012_2022/mapped_data/dat/2017_data.csv"
 )
 
 data_2022 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/2012_2017_2022/data_2022.csv"
+    path_to_data
+    + "MAPPING_DATA_2011_2012_2022/mapped_data/dat/2022_data.csv"
 )
 # -
 
@@ -123,14 +126,13 @@ class CustomWeightedRF(BaseEstimator, ClassifierMixin):
         )
 
     def fit(self, X, y, **kwargs):
+        
         # Calculate the target weights based on 'a'
         target_weights_dict = calculate_custom_weights(y, self.a)
         target_weights = np.array([target_weights_dict[sample] for sample in y])
-
-        # If a == 0, remove "cdl_cropType" from the dataset
         if self.a == 0:
             X_mod = X.drop(columns=["cdl_cropType"])
-            feature_weights = np.ones(X_mod.shape[0])  # No feature weights in this case
+            feature_weights = np.ones(X_mod.shape[0])
         else:
             X_mod = X.copy()
             feature_cols = ["cdl_cropType"]
@@ -202,7 +204,6 @@ def pred_tillage(df):
 
     to_replace = {"0-15%": 1, "16-30%": 2, ">30%": 3}
     X["fr_pred"] = X["fr_pred"].replace(to_replace)
-    X
     X.columns = X.columns.astype(str)
     y_preds = tillage_classifier.predict(X)
     df["Tillage"] = y_preds
@@ -229,20 +230,8 @@ mapped_2012.to_csv(
     path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/mapped_2012.csv",
     index=False,
 )
-
-# +
-mapped_2012 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2012.csv"
-)
-
-mapped_2017 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2017.csv"
-)
-
-mapped_2022 = pd.read_csv(
-    path_to_data + "MAPPING_DATA_2011_2012_2022/mapped_data/updated_mapped_2022.csv"
-)
 # -
+
 shpfile_2022 = gpd.read_file(
     path_to_data + "MAPPING_DATA_2011_2012_2022/shapefiles/2012_2017_2022/WSDA_2022.shp"
 )
@@ -280,6 +269,9 @@ pnw = wa_counties[
         ["Whitman", "Columbia", "Spokane", "Walla Walla", "Asotin", "Garfield"]
     )
 ]
+# -
+
+# # Plot map of tillage for each county
 
 # +
 import matplotlib.pyplot as plt
@@ -291,111 +283,99 @@ path_to_plots = (
     "Projects/Tillage_Mapping/plots/"
 )
 
-
-mapped_df = mapped_2022
-shfile_df = shpfile_2022
-# Merge mapped_2012 with shpfile_2012 geometry column
-mapped_df = mapped_df.merge(
-    shfile_df[["pointID", "geometry"]], on="pointID", how="left"
-)
-
-# Convert to GeoDataFrame after merging
-mapped_df = gpd.GeoDataFrame(mapped_df, geometry="geometry")
-
-mapped_df.head(2)
-
-gdf = mapped_df
-# Unique categories in 'Tillage'
-tillage_types = gdf["Tillage"].unique()
-
-# New colors and tillage order
-colors = ["#233D4D", "#FE7F2D", "#A1C181"]
-tillage_order = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
-
-# Ensure that tillage_order covers all unique tillage types from the data
-assert set(tillage_order) == set(
-    tillage_types
-), "Tillage order does not match unique tillage types in data"
-
-# Create a new color dictionary based on the provided order and colors
-color_dict = dict(zip(tillage_order, colors))
-# New names for legend items
-new_legend_names = {
-    "ConventionalTill": "CT",
-    "MinimumTill": "MT",
-    "NoTill-DirectSeed": "NT",
-}
-centroids = pnw.geometry.centroid
-
-# Create a dictionary mapping county names to centroid coordinates
-county_centroids = {
-    county: (centroid.x, centroid.y) for county, centroid in zip(pnw["NAME"], centroids)
-}
-
-centroids = pnw.geometry.centroid
-
-# Create a dictionary mapping county names to centroid coordinates
-county_centroids = {
-    county: (centroid.x, centroid.y) for county, centroid in zip(pnw["NAME"], centroids)
-}
-
-# Now, use the centroids for labeling in your plotting loop
-fig, ax = plt.subplots(figsize=(8, 14), dpi=300)
-pnw.plot(ax=ax, color="none", edgecolor="black")
-
-# Your existing plotting code for tillage types...
-# Plot farms with specific colors based on 'Tillage'
-for tillage_type, color in color_dict.items():
-    gdf[gdf["Tillage"] == tillage_type].plot(
-        ax=ax, color=color, label=tillage_type, alpha=0.9
+def map_county(mapped_data, shapfile):
+    # Merge mapped_2012 with shpfile_2012 geometry column
+    mapped_data = mapped_data.merge(
+        shapfile[["pointID", "geometry"]], on="pointID", how="left"
     )
-pnw.boundary.plot(ax=ax, color="black", linewidth=1)  # Adjust linewidth as needed
-# # Add county names using the centroids
-# for county, pos in county_centroids.items():
-#     ax.annotate(
-#         county,
-#         xy=pos,
-#         xytext=(3, 3),  # You may need to adjust this for optimal label placement
-#         textcoords="offset points",
-#         fontsize=12,  # Adjust font size as necessary
-#         ha="center",
-#         va="center",
-#     )
-# Increase font size of x and y ticks
-ax.tick_params(axis="both", which="major", labelsize=24)  # Adjust 'labelsize' as needed
 
-# Create legend from the new color mapping
-patches = [
-    mpatches.Patch(color=color, label=new_legend_names[tillage_type])
-    for tillage_type, color in color_dict.items()
-]
+    # Convert to GeoDataFrame after merging
+    mapped_data = gpd.GeoDataFrame(mapped_data, geometry="geometry")
 
-plt.legend(
-    handles=patches,
-    title="Tillage Method",
-    loc="center left",
-    fontsize=12,
-    title_fontsize=12,
-)
+    mapped_data.head(2)
 
-plt.xlabel("Longitude", fontsize=14)
-plt.ylabel("Latitude", fontsize=14)
+    gdf = mapped_data
+    # Unique categories in 'Tillage'
+    tillage_types = gdf["Tillage"].unique()
+
+    # New colors and tillage order
+    colors = ["#233D4D", "#FE7F2D", "#A1C181"]
+    tillage_order = ["ConventionalTill", "MinimumTill", "NoTill-DirectSeed"]
+
+    # Ensure that tillage_order covers all unique tillage types from the data
+    assert set(tillage_order) == set(
+        tillage_types
+    ), "Tillage order does not match unique tillage types in data"
+
+    # Create a new color dictionary based on the provided order and colors
+    color_dict = dict(zip(tillage_order, colors))
+    # New names for legend items
+    new_legend_names = {
+        "ConventionalTill": "CT",
+        "MinimumTill": "MT",
+        "NoTill-DirectSeed": "NT",
+    }
+    centroids = pnw.geometry.centroid
+
+    # Create a dictionary mapping county names to centroid coordinates
+    county_centroids = {
+        county: (centroid.x, centroid.y) for county, centroid in zip(pnw["NAME"], centroids)
+    }
+
+    centroids = pnw.geometry.centroid
+
+    # Create a dictionary mapping county names to centroid coordinates
+    county_centroids = {
+        county: (centroid.x, centroid.y) for county, centroid in zip(pnw["NAME"], centroids)
+    }
+
+    # Now, use the centroids for labeling in your plotting loop
+    fig, ax = plt.subplots(figsize=(8, 14), dpi=300)
+    pnw.plot(ax=ax, color="none", edgecolor="black")
+
+    # Your existing plotting code for tillage types...
+    # Plot farms with specific colors based on 'Tillage'
+    for tillage_type, color in color_dict.items():
+        gdf[gdf["Tillage"] == tillage_type].plot(
+            ax=ax, color=color, label=tillage_type, alpha=0.9
+        )
+    pnw.boundary.plot(ax=ax, color="black", linewidth=1)  # Adjust linewidth as needed
+
+    # Increase font size of x and y ticks
+    ax.tick_params(axis="both", which="major", labelsize=12)  # Adjust 'labelsize' as needed
+
+    # Create legend from the new color mapping
+    patches = [
+        mpatches.Patch(color=color, label=new_legend_names[tillage_type])
+        for tillage_type, color in color_dict.items()
+    ]
+
+    plt.legend(
+        handles=patches,
+        title="Tillage Method",
+        loc="center left",
+        fontsize=12,
+        title_fontsize=12,
+    )
+
+    plt.xlabel("Longitude", fontsize=14)
+    plt.ylabel("Latitude", fontsize=14)
+
+    year = mapped_data["year"].iloc[0]
+    # Save plot
+    plt.savefig(path_to_plots + f"mapping/fig_{year}_map.png", dpi=500, bbox_inches="tight")
+
+    plt.show()
 
 
-year = mapped_df["year"].iloc[0]
-# Save plot
-plt.savefig(path_to_plots + f"mapping/{year}_map.png", dpi=500, bbox_inches="tight")
+map_county(mapped_2022, shpfile_2022)
 
-plt.show()
+map_county(mapped_2017, shpfile_2017)
+
+map_county(mapped_2012, shpfile_2012)
 # -
 
-gdf
-
-gdf_whitman = gdf.loc[gdf["County"] == "Whitman"]
-
-cols = ["pointID", "Tillage", "year",
-        "County", "fr_pred", "cdl_cropType", "geometry"]
-gdf_whitman[cols].to_file(path_to_data + "mapped_2022_gpd.shp")
+# # Paneled map
 
 # +
 import matplotlib.pyplot as plt
@@ -516,14 +496,18 @@ for i, (mapped_df, shfile_df, year) in enumerate(zip(datasets, shapefiles, years
         county_label_settings,
     )
 
-# Save and display the final figure
-plt.tight_layout()
-plt.savefig(
-    path_to_plots + "mapping/fig_maps_121722.png",
-    dpi=300,
-    bbox_inches="tight",
-)
+# # Save and display the final figure
+# plt.tight_layout()
+# plt.savefig(
+#     path_to_plots + "mapping/fig_maps_121722.png",
+#     dpi=300,
+#     bbox_inches="tight",
+# )
+
 plt.show()
+# -
+
+# # Compare mapped tillage statistics with USDA Census data
 
 # +
 path_to_data = path_to_data = (
@@ -579,10 +563,11 @@ mapped_stats = mapped_stats[["County", "Source", "Relative_area", "Year", "Tilla
 # Sort for easier comparison
 mapped_stats = mapped_stats.sort_values(by=["County", "Year", "Tillage"]).reset_index(drop=True)
 
-# Display the result
-mapped_stats
-
 # +
+#######
+## Plot relationship between relative areas
+#######
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -728,17 +713,22 @@ legend2.get_title().set_fontweight("bold")
 # Adjust layout to give space for the legends
 plt.subplots_adjust(right=0.8)
 
-# Save the plot as a high-resolution image
-plt.savefig(
-    path_to_plots + "mapping/fig_mapped_usda_correlation.png",
-    dpi=200,
-    bbox_inches="tight",
-)
+# # Save the plot as a high-resolution image
+# plt.savefig(
+#     path_to_plots + "mapping/fig_mapped_usda_correlation.png",
+#     dpi=200,
+#     bbox_inches="tight",
+# )
 
 # Show the plot
 plt.show()
+# -
+
+# # Compare trends of change in tillage
 
 # +
+# Plot trends
+
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.patches import Patch
@@ -747,11 +737,10 @@ from matplotlib.font_manager import FontProperties
 # Define bold font properties for legend titles
 bold_font = FontProperties(weight="bold", size=24)
 
-# Load your data
 # Adjust the path
 df = comparison_df
 
-# Reshape the data so it fits the structure you want
+# Reshape the data
 df_usda = df[["County", "Year", "Tillage", "Relative_area_usda"]].copy()
 df_usda["Source"] = "USDA"
 df_usda.rename(columns={"Relative_area_usda": "Relative_area"}, inplace=True)
@@ -774,9 +763,9 @@ data["Source"] = pd.Categorical(data["Source"], ["Mapped", "USDA"])
 # Create the plot
 fig, ax = plt.subplots(figsize=(20, 10))
 bar_width = 0.4
-space_within_years = 0.05  # Small space between years
-space_between_sources = 0.5  # Space between Mapped and USDA for each county
-space_between_counties = 2  # Increased space between different counties
+space_within_years = 0.05 
+space_between_sources = 0.5  
+space_between_counties = 2  
 
 current_position = 0
 last_county = None
@@ -786,7 +775,7 @@ x_tick_labels = []
 
 for county, county_data in data.groupby("County"):
     if last_county and county != last_county:
-        current_position += space_between_counties  # Add extra space for a new county
+        current_position += space_between_counties  
     last_county = county
 
     for source in ["Mapped", "USDA"]:
@@ -842,9 +831,9 @@ tillage_legend = ax.legend(
     handles=tillage_legend_elements,
     title="Tillage",
     loc="upper left",
-    bbox_to_anchor=(1, 1),  # Adjust to move it into the right margin
+    bbox_to_anchor=(1, 1),  
     fontsize=24,
-    title_fontproperties=bold_font,  # Make title bold
+    title_fontproperties=bold_font,  
 )
 
 year_legend_elements = [
@@ -857,9 +846,9 @@ year_legend = ax.legend(
     handles=year_legend_elements,
     title="Year",
     loc="upper left",
-    bbox_to_anchor=(1, 0.55),  # Adjust to move it into the right margin
+    bbox_to_anchor=(1, 0.55),  
     fontsize=24,
-    title_fontproperties=bold_font,  # Make title bold
+    title_fontproperties=bold_font,  
 )
 
 # Add the tillage legend back to the plot so both appear
@@ -869,11 +858,11 @@ plt.tight_layout()
 plt.subplots_adjust(right=0.85)
 
 
-# Save the plot as a high-resolution image
-plt.savefig(
-    path_to_plots + "mapping/fig_map_trends.png",
-    dpi=200,
-    bbox_inches="tight",
-)
+# # Save the plot as a high-resolution image
+# plt.savefig(
+#     path_to_plots + "mapping/fig_map_trends.png",
+#     dpi=200,
+#     bbox_inches="tight",
+# )
 
 plt.show()

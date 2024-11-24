@@ -155,7 +155,6 @@ producers_accuracy = {}
 # Iterate over each class to compute Producer's Accuracy
 for cls in classes:
     # # Step 1: Numerator is the same as user's accuracy (correctly classified areas)
-    # numerator = users_accuracy[cls] * (beta_sum_sampled + beta_sum_non_sampled)
     alpha_beta_sum_sampled = 0
     for i, row in sampled_df.iterrows():
         # If the polygon belongs to class `cls`
@@ -173,21 +172,6 @@ for cls in classes:
             alpha_sum_sampled += (
                 row["ExactAcres"] if not np.isnan(row["ExactAcres"]) else 0
             )
-
-    # # Part 2: Non-sampled data (i = n+1 to N)
-    # alpha_sum_non_sampled = 0
-    # for i, row in sampled_df.iterrows():
-    #     if not np.isnan(row["ExactAcres"]):
-    #         # If the polygon is predicted to be in class `cls`
-    #         if row["y_pred"] == cls:
-    #             alpha_sum_non_sampled += p_hat[cls] * row["ExactAcres"]
-
-    # alpha_sum_non_sampled = 0
-    # for i, row in non_sampled_df.iterrows():
-    #     if not np.isnan(row["ExactAcres"]):
-    #         # If the polygon is predicted to be in class `cls`
-    #         if row["Tillage"] == cls:
-    #             alpha_sum_non_sampled += p_hat[cls] * row["ExactAcres"]
 
     # Denominator: Total area that actually belongs to class `cls`
     denominator = alpha_sum_sampled #+ alpha_sum_non_sampled

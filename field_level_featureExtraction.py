@@ -15,29 +15,13 @@
 # + id="whtD--m_FObX"
 # Initialize GEE python API
 import ee
-# # Trigger the authentication flow.
-# ee.Authenticate()
-# # Initialize the library.
-# ee.Initialize()
-
-# # Install geemap
-# # !pip install geemap
-# # !pip install geopandas
-import ee
 import geemap
 import numpy as np
 import geopandas as gpd
 import pandas as pd
-import time
 import os
-# # Mount google drive
-# from google.colab import drive
-# drive.mount('/content/drive')
-
-# +
-import ee
-
 from google.auth import default
+# -
 
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/path/to/service-account-file.json"
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
@@ -45,8 +29,6 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
     "Projects/Tillage_Mapping/gee_credentials/clear-shadow-332006-e8d8faf764f0.json"
 )
-# Obtain credentials with the appropriate scope
-# Obtain credentials with additional scope for Google Drive
 credentials, _ = default(
     scopes=[
         "https://www.googleapis.com/auth/cloud-platform",
@@ -54,7 +36,6 @@ credentials, _ = default(
     ]
 )
 # # Initialize the Earth Engine API with the specified project
-# ee.Initialize(credentials=credentials, project='project-id')
 ee.Initialize(credentials=credentials, project="clear-shadow-332006")
 
 
@@ -65,7 +46,6 @@ ee.Initialize(credentials=credentials, project="clear-shadow-332006")
 #######################     Functions     ######################
 
 # ///// Rename Landsat 8, 7 and 5 bands /////
-
 def renameBandsL8(image):
     bands = ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7', 'QA_PIXEL'];
     new_bands = ['B', 'G', 'R', 'NIR', 'SWIR1', 'SWIR2', 'QA_PIXEL'];
@@ -518,8 +498,6 @@ def groupImages_S1(year, orgCollection, geometry):
     .map(addDOY)\
     .map(lambda img: img.select(bands).rename(new_bandS0))
 
-    # .map(lambda img: img.set('system:time_start', ee.Date.fromYMD(year, 9, 1).millis()))
-
     collection_2 = orgCollection\
     .filterDate(
       ee.Date.fromYMD(ee.Number(year).add(ee.Number(1)), 3, 1),
@@ -580,9 +558,6 @@ path_to_data = ('/Users/aminnorouzi/Library/CloudStorage/'
                 'OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/'
                 'Projects/Tillage_Mapping/Data/')
 
-# path_to_data = ('/home/amnnrz/OneDrive - a.norouzikandelati/Ph.D/Projects/'
-#                 'Tillage_Mapping/Data/')
-
 
 shapefiles = [
     file
@@ -622,7 +597,7 @@ from google.oauth2 import service_account
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# Path to your service account key file
+# Path to service account key file
 SERVICE_ACCOUNT_FILE = (
     "/Users/aminnorouzi/Library/CloudStorage/"
     "OneDrive-WashingtonStateUniversity(email.wsu.edu)/Ph.D/"
@@ -797,15 +772,11 @@ def processInBatches(image, polygonsList, batch_size, file_name):
         polygon_batch = pyList_to_eeList(polygon_batch)
         batch_collection = ee.FeatureCollection(polygon_batch)
 
-        # for j in range(polygon_batch.size().getInfo())[:3]:
-        #     polygon = polygon_batch.get(j)
         batch_df = export_data_to_drive(
             image,
             batch_collection,
-            # f"histogram_export_batch_{i+1}_polygon_{j+1}",
             f"histogram_export_batch_{i+1}",
             "CSV",
-            # f"{file_name}" + f"histogram_export_batch_{i+1}_polygon_{j+1}",
             f"{file_name}" + f"histogram_export_batch_{i+1}",
             "CDL_data",
         )
@@ -829,8 +800,8 @@ def find_most_requesnt_crop(dict_str):
     max_key = max(dict, key=dict.get)
     return max_key
 
-# Define your batch size
-batch_size = 100  # Adjust this based on your needs
+# Define batch size
+batch_size = 100 
 # Example of processing and exporting for each year and shapefile
 cdl_list = []
 for year, shapefile, shpfile_name in zip(years, geopandas_list, shapefile_names):
@@ -1014,8 +985,8 @@ important_columns_names = [
     "ResidueCov",
     "Tillage",
     "WhereInRan",
-    # "ExactAcres",
-    # "County"
+    "ExactAcres",
+    "County"
 ]
 
 metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas(
@@ -1082,11 +1053,6 @@ processedCollection = Sentinel_1 \
 .map(toDb) \
 .map(lambda img: img.select(['VV_dB', 'VH_dB']))
 
-# # Display on map
-# Map = geemap.Map(center=[46.94, -117.100], zoom=7)
-# Map.addLayer(processedCollection, {
-#              'bands': ['VV_dB', 'VH_dB'], 'min': -20, 'max': 0}, 'Sentinel-1')
-# Map
 
 # Specify time period
 years = list(range(startYear, endYear))
@@ -1167,8 +1133,8 @@ important_columns_names = [
     "ResidueCov",
     "Tillage",
     "WhereInRan",
-    # "ExactAcres",
-    # "County"
+    "ExactAcres",
+    "County"
 ]
 
 metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas_S1(
@@ -1195,13 +1161,65 @@ print(Sentinel_1_metricBased_list[1].shape)
 Sentinel_1_metricBased_df = pd.DataFrame()
 for df in Sentinel_1_metricBased_list:
     Sentinel_1_metricBased_df = pd.concat([Sentinel_1_metricBased_df, df])
-# -
 
-Sentinel_1_metricBased_df.to_csv(
-    path_to_data + "field_level_data/FINAL_DATA/Sentinel_1_metricBased.csv",
-    index = False
+# +
+lsat_data = Landsat_metricBased_df
+s1_data = Sentinel_1_metricBased_df
+cdl_data = cdl_df
+
+to_replace = {
+    23: "Grain",
+    31: "Canola",
+    24: "Grain",
+    51: "Legume",
+    53: "Legume",
+    61: "Fallow/Idle Cropland",
+    52: "Legume",
+    176: "Grassland/Pasture",
+    35: "Mustard",
+    21: "Grain",
+    36: "Alfalfa",
+    42: "Legume",
+    37: "Hay, nonAlfalfa",
+}
+
+cdl_data["most_frequent_crop"] = cdl_data["most_frequent_crop"].replace(to_replace)
+cdl_data = cdl_data.loc[
+    cdl_data["most_frequent_crop"].isin(["Grain", "Legume", "Canola"])
+].copy()
+
+############ Merge cdl ############
+# Merge the specific column from df2 into df1 based on 'pointID'
+lsat_data = pd.merge(
+    lsat_data, cdl_data[["pointID", "most_frequent_crop"]], on="pointID", how="left"
 )
-Landsat_metricBased_df.to_csv(
-    path_to_data + "field_level_data/FINAL_DATA/Landsat_metricBased.csv", 
-    index = False
+
+# Rearrange the columns to place the merged column in the 4th position
+cols = list(lsat_data.columns)
+# Move the merged column to the 4th position (index 3)
+cols.insert(7, cols.pop(cols.index("most_frequent_crop")))
+
+# Reorder the DataFrame
+lsat_data = lsat_data[cols]
+
+# Rename crop type columns (survey: "PriorCropT", cdl:"most_frequent_crop")
+lsat_data.rename(
+    columns={"PriorCropT": "survey_cropType", "most_frequent_crop": "cdl_cropType"},
+    inplace=True,
+)
+
+# Remove NaN from cdl
+lsat_data = lsat_data.dropna(subset=["cdl_cropType", "ResidueCov"])
+
+
+# Fill NaN in Landsat data
+imagery_data = lsat_data.loc[:, "B_S0_p0":].copy()
+lsat_data.loc[:, "B_S0_p0":] = imagery_data.fillna(imagery_data.mean())
+lsat_data = lsat_data.reset_index(drop=True)
+
+# +
+s1_data.to_csv(path_to_data + "field_level_data/FINAL_DATA/s1_data.csv", index=False)
+
+lsat_data.to_csv(
+    path_to_data + "field_level_data/FINAL_DATA/lsat_data.csv", index=False
 )

@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.16.1
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3
 #     name: python3
@@ -15,12 +15,10 @@
 # + id="whtD--m_FObX"
 # Initialize GEE python API
 import ee
-import ee
 import geemap
 import numpy as np
 import geopandas as gpd
 import pandas as pd
-import time
 import os
 import sys
 # -
@@ -39,7 +37,6 @@ credentials, _ = default(scopes=[
     'https://www.googleapis.com/auth/drive'
 ])
 # # Initialize the Earth Engine API with the specified project
-# ee.Initialize(credentials=credentials, project='project-id')
 ee.Initialize(credentials=credentials, project='clear-shadow-332006')
 
 # + [markdown] id="dl5KSrInfIGI"
@@ -120,7 +117,7 @@ def addIndices(image):
 
 # Mask cloud
 def cloudMaskL8(image):
-  qa = image.select('QA_PIXEL') ##substitiu a band FMASK
+  qa = image.select('QA_PIXEL') 
   cloud1 = qa.bitwiseAnd(1<<3).eq(0)
   cloud2 = qa.bitwiseAnd(1<<9).eq(0)
   cloud3 = qa.bitwiseAnd(1<<4).eq(0)
@@ -594,7 +591,6 @@ shapefile_names = [shp for shp in files if shp.endswith(".shp")]
 # Sorting based on the year extracted from the filename
 shapefile_names = sorted(shapefile_names, key=lambda x: int(x.split('_')[1].split('.')[0]))
 
-
 geopandas_list = [
     gpd.read_file(path_to_data + "shapefiles/2012_2017_2022/" + _)
     for _ in shapefile_names
@@ -677,183 +673,183 @@ def delete_all_files():
 delete_all_files()
 
 # +
-# # Define date range
-# # ****** For 2021-2022 season, 2021 and for 2022-2023 season, 2022 CDL
-# # ****** data is downloaded and used as PriorCropType
+# Define date range
+# ****** For 2021-2022 season, 2021 and for 2022-2023 season, 2022 CDL
+# ****** data is downloaded and used as PriorCropType
 
-# # Load the USDA NASS CDL dataset
-# cdl = (
-#     ee.ImageCollection("USDA/NASS/CDL")
-#     .map(addYear)
-#     .filter(ee.Filter.inList('year', years))
-#     .filterBounds(geometry)
-# )
-
-
-# def authenticate_drive():
-#     # Path to your service account key file
-#     SERVICE_ACCOUNT_FILE = (
-#     "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
-#     "clear-shadow-332006-e8d8faf764f0.json"
-# )
-#     # Define the scopes
-#     SCOPES = ['https://www.googleapis.com/auth/drive']
-
-#     # Authenticate and construct service
-#     credentials = service_account.Credentials.from_service_account_file(
-#         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-#     service = build('drive', 'v3', credentials=credentials)
-#     return service
-
-# # Function to download a file from Google Drive
-# def download_file(service, file_id, file_path):
-#     request = service.files().get_media(fileId=file_id)
-#     fh = io.BytesIO()
-#     downloader = MediaIoBaseDownload(fh, request)
-#     done = False
-#     while not done:
-#         status, done = downloader.next_chunk()
-#     fh.seek(0)
-#     with open(file_path, 'wb') as f:
-#         f.write(fh.read())
-#     print('Download Complete')
-
-# # Function to find the file on Google Drive
-# def find_file(service, file_name):
-#     response = service.files().list(q=f"name='{file_name}'", spaces='drive', fields="nextPageToken, files(id, name)").execute()
-#     for file in response.get('files', []):
-#         return file.get('id')
-#     return None
-
-# # Function to delete a specific file by its ID
-# def delete_file(file_id):
-#     # Path to your service account key file
-#     SERVICE_ACCOUNT_FILE = (
-#     "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
-#     "clear-shadow-332006-e8d8faf764f0.json"
-# )
-#     # Define the scopes
-#     SCOPES = ['https://www.googleapis.com/auth/drive']
-
-#     # Authenticate and construct service
-#     credentials = service_account.Credentials.from_service_account_file(
-#         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-#     service = build('drive', 'v3', credentials=credentials)
-
-#     # Delete the specific file
-#     try:
-#         service.files().delete(fileId=file_id).execute()
-#         print(f"Deleted file with ID: {file_id}")
-#     except Exception as e:
-#         print(f"Failed to delete file (ID: {file_id}): {e}")
+# Load the USDA NASS CDL dataset
+cdl = (
+    ee.ImageCollection("USDA/NASS/CDL")
+    .map(addYear)
+    .filter(ee.Filter.inList('year', years))
+    .filterBounds(geometry)
+)
 
 
-# # Function to initiate and monitor the export task
-# def export_data_to_drive(image, batch_collection, description, file_format,
-#                          file_prefix, folder):
+def authenticate_drive():
+    # Path to your service account key file
+    SERVICE_ACCOUNT_FILE = (
+    "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
+    "clear-shadow-332006-e8d8faf764f0.json"
+)
+    # Define the scopes
+    SCOPES = ['https://www.googleapis.com/auth/drive']
 
-#     histogram = image.reduceRegions(
-#         collection=batch_collection,
-#         reducer=ee.Reducer.frequencyHistogram(),
-#         scale=30
-#     )
+    # Authenticate and construct service
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    service = build('drive', 'v3', credentials=credentials)
+    return service
 
-#     task = ee.batch.Export.table.toDrive(
-#         collection=histogram,
-#         description=description,
-#         fileFormat=file_format,
-#         fileNamePrefix=file_prefix,
-#         folder=folder,
-#     )
-#     task.start()
+# Function to download a file from Google Drive
+def download_file(service, file_id, file_path):
+    request = service.files().get_media(fileId=file_id)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+    fh.seek(0)
+    with open(file_path, 'wb') as f:
+        f.write(fh.read())
+    print('Download Complete')
 
-#     while task.active():
-#         print('Polling for task (id: {}).'.format(task.id))
-#         time.sleep(30)
+# Function to find the file on Google Drive
+def find_file(service, file_name):
+    response = service.files().list(q=f"name='{file_name}'", spaces='drive', fields="nextPageToken, files(id, name)").execute()
+    for file in response.get('files', []):
+        return file.get('id')
+    return None
 
-#     if task.status()['state'] == 'COMPLETED':
-#         print('Export completed successfully!')
-#         service = authenticate_drive()
-#         file_name = f"{file_prefix}.csv"
-#         file_id = find_file(service, file_name)
-#         if file_id:
-#             download_file(service, file_id, file_name)
-#             df = pd.read_csv(file_name)
-#             delete_file(file_id)
-#         else:
-#             print('File not found.')
-#     else:
-#         print('Error with export:', task.status())
+# Function to delete a specific file by its ID
+def delete_file(file_id):
+    # Path to your service account key file
+    SERVICE_ACCOUNT_FILE = (
+    "/home/a.norouzikandelati/Google_stuff/gee_credentials/"
+    "clear-shadow-332006-e8d8faf764f0.json"
+)
+    # Define the scopes
+    SCOPES = ['https://www.googleapis.com/auth/drive']
 
-#     return df
+    # Authenticate and construct service
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    service = build('drive', 'v3', credentials=credentials)
 
-
-# def processInBatches(image, polygonsList, batch_size, file_name, batch_number, year):
-#     num_batches = math.ceil(len(polygonsList) / batch_size)
-#     cdl_df = pd.DataFrame()
-#     for i in range(num_batches):
-#         start = i * batch_size
-#         end = start + batch_size
-#         print((start, end))
-#         polygon_batch = polygonsList[start:end]
-#         polygon_batch = pyList_to_eeList(polygon_batch)
-#         batch_collection = ee.FeatureCollection(polygon_batch)
-
-#         # for j in range(polygon_batch.size().getInfo())[:3]:
-#         #     polygon = polygon_batch.get(j)
-#         batch_df = export_data_to_drive(
-#             image,
-#             batch_collection,
-#             # f"histogram_export_batch_{i+1}_polygon_{j+1}",
-#             f"{year}" + "_batch_number:" + f"{batch_number}"
-#             + "_" + f"cdl_histogram_export_batch_{i+1}",
-#             "CSV",
-#             # f"{file_name}" + f"histogram_export_batch_{i+1}_polygon_{j+1}",
-#             f"{file_name}" + f"histogram_export_batch_{i+1}",
-#             "CDL_data",
-#         )
-#         cdl_df = pd.concat([cdl_df, batch_df])
-#     return cdl_df
+    # Delete the specific file
+    try:
+        service.files().delete(fileId=file_id).execute()
+        print(f"Deleted file with ID: {file_id}")
+    except Exception as e:
+        print(f"Failed to delete file (ID: {file_id}): {e}")
 
 
-# def cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name, batch_number):
-#     cdl_image = cdl.filterDate(
-#         ee.Date.fromYMD(ee.Number(int(year)), 1, 1),
-#         ee.Date.fromYMD(ee.Number(int(year)), 12, 31),
-#     ).first()
+# Function to initiate and monitor the export task
+def export_data_to_drive(image, batch_collection, description, file_format,
+                         file_prefix, folder):
 
-#     polygons = geemap.geopandas_to_ee(shapefile)
-#     polygonsList = eeList_to_pyList(polygons.toList(polygons.size()))
+    histogram = image.reduceRegions(
+        collection=batch_collection,
+        reducer=ee.Reducer.frequencyHistogram(),
+        scale=30
+    )
 
-#     return processInBatches(cdl_image, polygonsList, batch_size, file_name, batch_number, year)
+    task = ee.batch.Export.table.toDrive(
+        collection=histogram,
+        description=description,
+        fileFormat=file_format,
+        fileNamePrefix=file_prefix,
+        folder=folder,
+    )
+    task.start()
 
-# def find_most_requesnt_crop(dict_str):
-#     dict = eval(dict_str.replace('=', ':'))
-#     max_key = max(dict, key=dict.get)
-#     return max_key
+    while task.active():
+        print('Polling for task (id: {}).'.format(task.id))
+        time.sleep(30)
 
-# # Define your batch size
-# batch_size = 50  # Adjust this based on your needs
-# # Example of processing and exporting for each year and shapefile
-# cdl_list = []
-# for year, shapefile, shpfile_name in zip(years, geopandas_list, shapefile_names):
-#     shapefile_name =shpfile_name
-#     file_name = shapefile_name + f"{year}"
-#     downloaded_cdl = cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name, batch_number)
-#     downloaded_cdl['year'] = year
-#     cdl_list.append(downloaded_cdl)
+    if task.status()['state'] == 'COMPLETED':
+        print('Export completed successfully!')
+        service = authenticate_drive()
+        file_name = f"{file_prefix}.csv"
+        file_id = find_file(service, file_name)
+        if file_id:
+            download_file(service, file_id, file_name)
+            df = pd.read_csv(file_name)
+            delete_file(file_id)
+        else:
+            print('File not found.')
+    else:
+        print('Error with export:', task.status())
 
-# cdl_df = pd.DataFrame()
-# for df in cdl_list:
-#     df["most_frequent_crop"] = df["cropland"].apply(find_most_requesnt_crop)
-#     cdl_df = pd.concat([cdl_df, df[["year", "pointID", "most_frequent_crop"]]])
+    return df
 
-# cdl_df.to_csv(
-#     path_to_data
-#     + "2012_2017_2022/cdl_data/"
-#     + "cdl_df_batch_"
-#     + f"{batch_number}"
-#     + ".csv")
+
+def processInBatches(image, polygonsList, batch_size, file_name, batch_number, year):
+    num_batches = math.ceil(len(polygonsList) / batch_size)
+    cdl_df = pd.DataFrame()
+    for i in range(num_batches):
+        start = i * batch_size
+        end = start + batch_size
+        print((start, end))
+        polygon_batch = polygonsList[start:end]
+        polygon_batch = pyList_to_eeList(polygon_batch)
+        batch_collection = ee.FeatureCollection(polygon_batch)
+
+        # for j in range(polygon_batch.size().getInfo())[:3]:
+        #     polygon = polygon_batch.get(j)
+        batch_df = export_data_to_drive(
+            image,
+            batch_collection,
+            # f"histogram_export_batch_{i+1}_polygon_{j+1}",
+            f"{year}" + "_batch_number:" + f"{batch_number}"
+            + "_" + f"cdl_histogram_export_batch_{i+1}",
+            "CSV",
+            # f"{file_name}" + f"histogram_export_batch_{i+1}_polygon_{j+1}",
+            f"{file_name}" + f"histogram_export_batch_{i+1}",
+            "CDL_data",
+        )
+        cdl_df = pd.concat([cdl_df, batch_df])
+    return cdl_df
+
+
+def cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name, batch_number):
+    cdl_image = cdl.filterDate(
+        ee.Date.fromYMD(ee.Number(int(year)), 1, 1),
+        ee.Date.fromYMD(ee.Number(int(year)), 12, 31),
+    ).first()
+
+    polygons = geemap.geopandas_to_ee(shapefile)
+    polygonsList = eeList_to_pyList(polygons.toList(polygons.size()))
+
+    return processInBatches(cdl_image, polygonsList, batch_size, file_name, batch_number, year)
+
+def find_most_requesnt_crop(dict_str):
+    dict = eval(dict_str.replace('=', ':'))
+    max_key = max(dict, key=dict.get)
+    return max_key
+
+# Define your batch size
+batch_size = 50  # Adjust this based on your needs
+# Example of processing and exporting for each year and shapefile
+cdl_list = []
+for year, shapefile, shpfile_name in zip(years, geopandas_list, shapefile_names):
+    shapefile_name =shpfile_name
+    file_name = shapefile_name + f"{year}"
+    downloaded_cdl = cdl_dataframe_yith_batched(year, shapefile, batch_size, file_name, batch_number)
+    downloaded_cdl['year'] = year
+    cdl_list.append(downloaded_cdl)
+
+cdl_df = pd.DataFrame()
+for df in cdl_list:
+    df["most_frequent_crop"] = df["cropland"].apply(find_most_requesnt_crop)
+    cdl_df = pd.concat([cdl_df, df[["year", "pointID", "most_frequent_crop"]]])
+
+cdl_df.to_csv(
+    path_to_data
+    + "2012_2017_2022/cdl_data/"
+    + "cdl_df_batch_"
+    + f"{batch_number}"
+    + ".csv")
 
 # + [markdown] id="DUhdHR8xIrUE"
 # # Download Metric-Based Landsat Data
@@ -1068,167 +1064,6 @@ year_column = Landsat_metricBased_df.pop('year')
 Landsat_metricBased_df.insert(1, 'year', year_column)
 # -
 
-# # Download Metric-Based Sentinel-1 Data
-
-# +
-# from functools import reduce
-# ###########################################################################
-# ###################      Distribution-based Features      #################
-# ###########################################################################
-# # Create a list of lists of imageCollections. Each year would have n number
-# # of imageCollection corresponding to the time periods specified
-# # for creating metric composites.
-# Sentinel_1 = ee.ImageCollection("COPERNICUS/S1_GRD") \
-#     .map(addYear) \
-#     .filter(ee.Filter.inList('year', expanded_years)) \
-#     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV')) \
-#     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH')) \
-#     .filter(ee.Filter.eq('instrumentMode', 'IW')) \
-#     .map(lambda img: img.set('year', img.date().get('year')))\
-#     .map(lambda img: img.clip(geometry))
-
-# # Convert pixel values to logarithmic scale (decible scale)
-# def toDb(img):
-
-#     dB = ee.Image(10.0).multiply(img.log10()).toFloat()
-#     # Rename the bands for VV and VH
-#     bands = img.bandNames();
-#     newBands = bands.map(lambda band: ee.String(band).cat('_dB'))
-
-#     # Add dB bands and rename them
-#     imageWithDb = img.addBands(dB)
-#     renamedImage = imageWithDb.select(bands, newBands)
-
-#     return renamedImage
-
-
-# # Apply preprocessing and visualization
-# processedCollection = Sentinel_1 \
-# .map(toDb) \
-# .map(lambda img: img.select(['VV_dB', 'VH_dB']))
-
-# # # Display on map
-# # Map = geemap.Map(center=[46.94, -117.100], zoom=7)
-# # Map.addLayer(processedCollection, {
-# #              'bands': ['VV_dB', 'VH_dB'], 'min': -20, 'max': 0}, 'Sentinel-1')
-# # Map
-
-# yearlyCollectionsList = []
-# for y in years:
-#   yearlyCollectionsList = yearlyCollectionsList + \
-#   [groupImages_S1(y, processedCollection, geometry)]  # 'yearlyCollectionsList' is a Python list
-
-# # Clip each collection to the WSDA field boundaries
-# clipped_mainBands_CollectionList = list(map(
-#   lambda collList, shp: list(map(
-#     lambda collection: ee.ImageCollection(collection).map(
-#       lambda img: img.clip(ee.FeatureCollection(shp))), collList)),
-#         yearlyCollectionsList, shpfilesList))
-
-# # Extract GLCM metrics
-# clipped_GLCM_collectionList = list(map(
-#   lambda collList: list(map(applyGLCM, collList)),
-#     clipped_mainBands_CollectionList))
-
-# # # Compute percentiles
-# percentiles = [5, 25, 50, 75, 100]
-# mainBands_percentile_collectionList = \
-# list(map(lambda collList: list(map(lambda collection: collection.reduce(
-#   ee.Reducer.percentile(percentiles)), collList)),
-#     clipped_mainBands_CollectionList))
-
-# mainBands_percentile_collectionList = [
-#     remove_doy(image_list) for image_list in mainBands_percentile_collectionList
-# ]
-
-# glcmBands_percentile_collectionList = \
-# list(map(lambda collList: list(map(lambda collection: collection.reduce(
-#   ee.Reducer.percentile(percentiles)), collList)),
-#     clipped_GLCM_collectionList))
-
-# glcmBands_percentile_collectionList = [
-#     remove_doy(image_list) for image_list in glcmBands_percentile_collectionList
-# ]
-
-# # Reduce each image in the imageCollections (with main bands) to mean
-# #  value over each field (for each year)
-# # This will produce a list of lists containing reduced featureCollections
-# reducedList_mainBands = list(map(
-#   lambda imgList, shp:percentile_imageReducer(
-#     imgList, ee.FeatureCollection(shp)),
-#        mainBands_percentile_collectionList, shpfilesList))    
-
-# # Reduce each image in the imageCollections (with GLCM bands)
-# #  to mean value over each field (for each year)
-# reducedList_glcmBands = list(map(
-#     lambda imgList, shp: percentile_imageReducer(
-#         imgList, ee.FeatureCollection(shp)),
-#     glcmBands_percentile_collectionList, shpfilesList))
-
-# # Extract band names to use in our dataframes
-# # The bands are identical for all years so we use the first year
-# #  imageCollection, [0]
-# # Main bands:
-# nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
-#                       mainBands_percentile_collectionList[0]))
-# mainBands = [name for sublist in nameLists for name in sublist]
-
-# # GLCM bands:
-# nameLists = list(map(lambda img: ee.Image(img).bandNames().getInfo(),
-#                       glcmBands_percentile_collectionList[0]))
-# glcmBands = [name for sublist in nameLists for name in sublist]
-
-# # Convert each year's composites to a single dataframe
-# # and put all the dataframes in a list a dataframe.
-
-# important_columns_names = [
-#     "pointID",
-#     "ExactAcres",
-#     "County"
-# ]
-
-# metricBased_dataframeList_mainBands = eefeatureColl_to_Pandas_S1(
-#   reducedList_mainBands, mainBands, important_columns_names)
-
-# metricBased_dataframeList_glcm = eefeatureColl_to_Pandas_S1(
-#   reducedList_glcmBands, glcmBands, important_columns_names)
-
-# # Merge main and glcm bands for each year
-# allYears_metricBased_list = list(map(
-#     lambda mainband_df, glcmband_df: pd.concat(
-#         [mainband_df, glcmband_df], axis=1),
-#     metricBased_dataframeList_mainBands, metricBased_dataframeList_glcm))
-
-# # Remove duplicated columns
-# duplicated_cols_idx = [df.columns.duplicated()
-#                        for df in allYears_metricBased_list]
-# Sentinel_1_metricBased_list = list(map(
-#     lambda df, dup_idx: df.iloc[:, ~dup_idx], allYears_metricBased_list, duplicated_cols_idx))
-
-# print(Sentinel_1_metricBased_list[0].shape)
-# print(Sentinel_1_metricBased_list[1].shape)
-
-# Sentinel_1_metricBased_list_with_year = []
-# for df, year in zip(Sentinel_1_metricBased_list, years):
-#   df = df.copy()
-#   df.loc[:, "year"] = year + 1 
-#   Sentinel_1_metricBased_list_with_year.append(df)
-
-# Sentinel_1_metricBased_df = pd.DataFrame()
-# for df in Sentinel_1_metricBased_list_with_year:
-#     Sentinel_1_metricBased_df = pd.concat([Sentinel_1_metricBased_df, df])
-
-# year_column = Sentinel_1_metricBased_df.pop('year')
-# Sentinel_1_metricBased_df.insert(1, 'year', year_column)
-
-# +
-# Sentinel_1_metricBased_df.to_csv(
-#     path_to_data
-#     + "2012_2017_2022/landsat_data/"
-#     + "Sentinel_1_metricBased_eastwa_"
-#     + f"{batch_number}"
-#     + ".csv"
-# )
 Landsat_metricBased_df.to_csv(
     path_to_data + "2012_2017_2022/landsat_data/"
     + "Landsat_metricBased_eastwa_"
